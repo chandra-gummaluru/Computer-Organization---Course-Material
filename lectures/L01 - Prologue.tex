@@ -60,8 +60,10 @@
     \begin{tikzpicture}[node distance=0mm]
       \tikzset{
         layer/.style={
-          draw=black, thick, minimum width=6cm, minimum height=8mm,
-          fill=gray!30!white!20, inner sep=0pt
+          draw=black, thick,
+          minimum width=6cm, minimum height=8mm,
+          fill=gray!30!white!20,
+          inner sep=0pt, outer sep=0pt
         }
       }
       \node[layer] (l6) at (0,0) {programs};
@@ -83,7 +85,7 @@
 \end{frame}
 
 \begin{frame}
-  We begin with circuits whose output depends only on their current input. From transistors, we build up:\\[2mm]
+  We begin with circuits whose output depends only on their current input.\\[2mm]
   \begin{itemize}
     \item \highlight{\textbf{logic gates}}: \\
           \graytext{the basic operations on binary values} \\[2mm]
