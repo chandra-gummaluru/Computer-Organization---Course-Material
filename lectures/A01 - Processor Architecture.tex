@@ -63,7 +63,80 @@
       \draw[thick, ->] (dm.south) -- ++(0,-0.9) -| (rf.south) node[pos=0.25, below, smallgraytext] {write back};
       % program counter advance
       \draw[thick, ->] (pc.north) -- ++(0,0.7) -| ($(pc.north)+(-0.9,0)$) -- (pc.west);
-      \node[smallgraytext] at (-1.35,0.7) {\small$+1$};
+      \node[smallgraytext] at (-1.35,0.7) {\small$+4$};
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+% ------------------------------------------------------------
+% the ALU
+% ------------------------------------------------------------
+\begin{frame}{Inside the ALU}
+  \begin{center}
+    \Large \highlight{\textbf{inside the ALU}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The arithmetic part of the ALU is just the adder we built, with a small block that reshapes the second input. What we feed the adder decides the operation.\\[1mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth]
+      \draw[thick, fill=gray!30!white!20] (0,-1.2) rectangle (1.7,0.2);
+      \node[align=center] at (0.85,-0.5) {\small input\\ logic};
+      \draw[thick, fill=gray!30!white!20] (3.0,-1.5) rectangle (4.6,1.0);
+      \node[align=center] at (3.8,-0.25) {\small adder};
+      % A straight to adder
+      \draw[thick, ->] (-1.2,0.6) node[left, smallgraytext] {\ttab{a}} -- (3.0,0.6);
+      % B through input logic to adder
+      \draw[thick, ->] (-1.2,-0.5) node[left, smallgraytext] {\ttab{b}} -- (0,-0.5);
+      \draw[thick, ->] (1.7,-0.5) -- (3.0,-0.5) node[midway, above, smallgraytext] {\ttab{y}};
+      % select into input logic
+      \draw[thick, ->] (0.85,-1.2) -- ++(0,-0.4) node[below, smallgraytext] {select};
+      % cin and result
+      \draw[thick, ->] (3.8,1.5) node[above, smallgraytext] {\ttab{cin}} -- (3.8,1.0);
+      \draw[thick, ->] (4.6,-0.25) -- ++(0.8,0) node[right, smallgraytext] {\ttab{g}};
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{$g = a + y + \ttab{cin}$}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  By choosing what the input logic sends as \ttab{y}, one adder performs many operations.\\[4mm]
+  \begin{center}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{c@{\hspace{8mm}}l@{\hspace{8mm}}l}
+      \graytext{\ttab{y}} & \graytext{result} & \graytext{operation} \\ \hline
+      \ttab{0} & $g = a$ & \graytext{transfer} \\
+      \ttab{b} & $g = a + b$ & \graytext{add} \\
+      \ttab{$\overline{\ttab{b}}$} & $g = a - b$ \graytext{ (with \ttab{cin}$=$\ttab{1})} & \graytext{subtract} \\
+      \ttab{1} & $g = a - 1$ & \graytext{decrement} \\
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  A full ALU places an arithmetic block and a logic block side by side. A multiplexer selects which result leaves, and status flags report on it.\\[1mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth]
+      \draw[thick, fill=gray!30!white!20] (0,0.4) rectangle (2.0,1.8);
+      \node[align=center] at (1.0,1.1) {\small arithmetic};
+      \draw[thick, fill=gray!30!white!20] (0,-1.8) rectangle (2.0,-0.4);
+      \node[align=center] at (1.0,-1.1) {\small logic};
+      \draw[thick] (-1.0,1.4) node[left, smallgraytext] {\ttab{a}} -- (0,1.4);
+      \draw[thick] (-1.0,0.8) node[left, smallgraytext] {\ttab{b}} -- (0,0.8);
+      \draw[thick] (-1.0,-0.8) -- (0,-0.8);
+      \draw[thick] (-1.0,-1.4) -- (0,-1.4);
+      % mux
+      \draw[thick, fill=gray!30!white!20] (3.0,0.7) -- (3.0,-0.7) -- (3.7,-1.0) -- (3.7,1.0) -- cycle;
+      \draw[thick, ->] (2.0,1.1) -- (3.0,0.5);
+      \draw[thick, ->] (2.0,-1.1) -- (3.0,-0.5);
+      \draw[thick] (3.35,-0.85) -- ++(0,-0.4) node[below, smallgraytext] {select};
+      \draw[thick, ->] (3.7,0) -- ++(0.8,0) node[right, smallgraytext] {result};
+      \draw[thick, ->] (1.0,1.8) -- ++(0,0.5) node[above, smallgraytext] {flags};
     \end{tikzpicture}
   \end{figure}
 \end{frame}
@@ -127,6 +200,25 @@
     \item \highlight{\textbf{fetch}}: \graytext{read the instruction at the program counter} \\[2mm]
     \item \highlight{\textbf{decode}}: \graytext{work out which operation and operands it names} \\[2mm]
     \item \highlight{\textbf{execute}}: \graytext{perform the operation and store the result}
+  \end{itemize}
+  \vspace{3mm}
+  \begin{center}
+    \graytext{one instruction takes several clock cycles, one control state per step}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The \highlight{\textbf{program counter}} holds the address of the current instruction. Because memory is addressed one byte at a time and an instruction is four bytes, it advances by \highlight{4}.\\[3mm]
+  \begin{center}
+    \graytext{a branch or a jump instead loads a new address, computed by the ALU}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The processor only computes on registers. Special instructions move data between memory and the registers. This is a \highlight{\textbf{load-store}} architecture.\\[3mm]
+  \begin{itemize}
+    \item \highlight{\textbf{load}} \graytext{copies a value from memory into a register} \\[2mm]
+    \item \highlight{\textbf{store}} \graytext{copies a value from a register back to memory}
   \end{itemize}
 \end{frame}
 

@@ -80,6 +80,34 @@
   \end{figure}
 \end{frame}
 
+\begin{frame}
+  Each cell in a row is one bit. A cell is a latch that stores the bit, with a select line that opens it when its row is chosen.\\[1mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth]
+      \draw[thick, fill=gray!30!white!20] (0,-0.7) rectangle (1.6,0.7);
+      \node[align=center] at (0.8,0) {\small latch};
+      \draw[thick, <->] (1.6,0) -- ++(0.9,0) node[right, smallgraytext] {bit line};
+      \draw[thick] (0.8,0.7) -- ++(0,0.6) node[above, smallgraytext] {select};
+      \draw[thick] (0,0) -- ++(-0.9,0) node[left, smallgraytext] {data};
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{storing a bit is the same one-bit memory we built from gates}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The address width sets how much a memory holds. With \highlight{m} address bits there are \highlight{2^m} rows, and if each row is \highlight{n} bits wide the total is fixed.\\[4mm]
+  \begin{center}
+    \highlight{\text{size} = 2^m \times n \text{ bits}}
+  \end{center}
+  \vspace{2mm}
+  \begin{center}
+    \graytext{writing selects a row through the decoder, reading gathers a row through a multiplexer}
+  \end{center}
+\end{frame}
+
 % ------------------------------------------------------------
 % RAM vs ROM
 % ------------------------------------------------------------
@@ -105,6 +133,28 @@
 \begin{frame}
   \highlight{\textbf{RAM}} is used for data that changes while a program runs. Its contents are lost when power is removed.\\[3mm]
   \highlight{\textbf{ROM}} is used for data that must survive a power cycle, such as the instructions that start the machine.
+\end{frame}
+
+% ------------------------------------------------------------
+% register file
+% ------------------------------------------------------------
+\begin{frame}{The Register File}
+  \begin{center}
+    \Large \highlight{\textbf{the register file}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  A processor keeps a small, fast memory called the \highlight{\textbf{register file}}. It is addressed the same way, but built for speed.\\[3mm]
+  \begin{itemize}
+    \item \graytext{a decoder picks which register to write} \\[1.5mm]
+    \item \graytext{a multiplexer picks which register to read} \\[1.5mm]
+    \item \graytext{it can read two registers and write one at the same time}
+  \end{itemize}
+  \vspace{2mm}
+  \begin{center}
+    \graytext{main memory is the library, the register file is the books open on the desk}
+  \end{center}
 \end{frame}
 
 \begin{frame}

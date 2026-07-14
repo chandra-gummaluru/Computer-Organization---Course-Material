@@ -70,6 +70,28 @@
   \end{minipage}
 \end{frame}
 
+\begin{frame}
+  Both gates share the same two inputs. This is the whole half-adder circuit.\\[1mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth]
+      \node[xor gate US, draw, thick, scale=1.3] (x) at (0.6,1.0) {};
+      \node[and gate US, draw, thick, scale=1.3] (a) at (0.6,-1.0) {};
+      % input a rail
+      \draw[thick] (-2.4,1.2) node[left, smallgraytext] {\ttab{a}} -- (x.input 1);
+      \draw[thick] (-1.6,1.2) -- (-1.6,-0.8) -- (a.input 1);
+      \fill (-1.6,1.2) circle (1.5pt);
+      % input b rail
+      \draw[thick] (-2.4,0.8) node[left, smallgraytext] {\ttab{b}} -- (x.input 2);
+      \draw[thick] (-1.2,0.8) -- (-1.2,-1.2) -- (a.input 2);
+      \fill (-1.2,0.8) circle (1.5pt);
+      % outputs
+      \draw[thick] (x.output) -- ++(0.7,0) node[right, smallgraytext] {\ttab{s} \graytext{(sum)}};
+      \draw[thick] (a.output) -- ++(0.7,0) node[right, smallgraytext] {\ttab{c} \graytext{(carry)}};
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
 % ------------------------------------------------------------
 % full adder
 % ------------------------------------------------------------
@@ -108,6 +130,58 @@
       \ttab{1} & \ttab{1} & \ttab{1} & \ttab{1} & \ttab{1} \\
     \end{tabular}
   \end{minipage}
+\end{frame}
+
+\begin{frame}
+  A full adder is two half adders. The first adds \ttab{a} and \ttab{b}, the second adds in the carry.\\[3mm]
+  \begin{itemize}
+    \item \highlight{p = a \oplus b} \graytext{ and } \highlight{g = a \cdot b} \\
+          \graytext{the first half adder's sum and carry} \\[2mm]
+    \item \highlight{s = p \oplus \ttab{cin}} \\
+          \graytext{the final sum} \\[2mm]
+    \item \highlight{\ttab{cout} = g + p \cdot \ttab{cin}} \\
+          \graytext{a carry appears if the pair made one, or the carry in propagated}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  Wiring the two half adders together gives the full-adder circuit.\\[1mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth, scale=0.92, transform shape]
+      % first half adder
+      \node[xor gate US, draw, thick, scale=1.1] (x1) at (0,2.2) {};
+      \node[and gate US, draw, thick, scale=1.1] (a1) at (0,0.9) {};
+      \draw[thick] (-2.3,2.4) node[left, smallgraytext] {\ttab{a}} -- (x1.input 1);
+      \draw[thick] (-1.7,2.4) -- (-1.7,1.1) -- (a1.input 1);
+      \fill (-1.7,2.4) circle (1.3pt);
+      \draw[thick] (-2.3,2.0) node[left, smallgraytext] {\ttab{b}} -- (x1.input 2);
+      \draw[thick] (-1.3,2.0) -- (-1.3,0.7) -- (a1.input 2);
+      \fill (-1.3,2.0) circle (1.3pt);
+      % p and g
+      \draw[thick] (x1.output) -- (1.3,2.2) node[above, smallgraytext] {\ttab{p}} coordinate (p);
+      \draw[thick] (a1.output) -- (3.6,0.9) coordinate (g);
+      % second half adder
+      \node[xor gate US, draw, thick, scale=1.1] (x2) at (2.6,2.0) {};
+      \node[and gate US, draw, thick, scale=1.1] (a2) at (2.6,0.0) {};
+      % p feeds both
+      \draw[thick] (1.3,2.2) -- (1.3,2.2) (p) |- (x2.input 1);
+      \draw[thick] (1.3,2.2) -- (1.3,0.2) -- (a2.input 1);
+      \fill (1.3,2.2) circle (1.3pt);
+      % cin feeds both
+      \draw[thick] (-0.2,-1.1) node[left, smallgraytext] {\ttab{cin}} -- (1.9,-1.1);
+      \draw[thick] (1.9,-1.1) |- (a2.input 2);
+      \draw[thick] (1.55,-1.1) -- (1.55,1.8) -- (x2.input 2);
+      \fill (1.55,-1.1) circle (1.3pt);
+      % s output
+      \draw[thick] (x2.output) -- ++(0.7,0) node[right, smallgraytext] {\ttab{s}};
+      % OR for cout
+      \node[or gate US, draw, thick, scale=1.1] (o) at (4.6,0.45) {};
+      \draw[thick] (a2.output) -| (o.input 2);
+      \draw[thick] (g) |- (o.input 1);
+      \draw[thick] (o.output) -- ++(0.6,0) node[right, smallgraytext] {\ttab{cout}};
+    \end{tikzpicture}
+  \end{figure}
 \end{frame}
 
 % ------------------------------------------------------------
@@ -179,6 +253,57 @@
   \end{figure}
   \begin{center}
     \graytext{\ttab{sub}$=$\ttab{0} adds, \ttab{sub}$=$\ttab{1} subtracts}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The trick is one XOR per bit. When \ttab{sub} is \ttab{1} each XOR inverts its bit of \ttab{b}, and \ttab{sub} also feeds the carry in of the lowest bit, adding the extra one.\\[1mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth]
+      % one bit slice
+      \draw[thick, fill=gray!30!white!20] (0,-0.7) rectangle (1.8,0.7);
+      \node[smallgraytext] at (0.9,0) {\ttab{FA}};
+      % a input (top-left, goes straight in)
+      \draw[thick] (0.5,0.7) -- ++(0,1.5) node[above, smallgraytext] {\ttab{a\_i}};
+      % XOR inverts b when sub is 1
+      \node[xor gate US, draw, thick, scale=0.9, rotate=-90] (xo) at (1.3,1.55) {};
+      \draw[thick] (xo.output) -- (1.3,0.7);
+      \draw[thick] (xo.input 1) -- ++(0,0.35) node[above, smallgraytext] {\ttab{b\_i}};
+      % sub feeds the xor and the lowest carry in
+      \draw[thick] (xo.input 2) -- ++(0,0.2) -| (3.4,-1.3);
+      \draw[thick] (1.8,-0.35) -- (2.6,-0.35) -- (2.6,-1.3) -- (3.4,-1.3);
+      \draw[thick] (3.4,-1.3) -- (4.1,-1.3) node[right, smallgraytext] {\ttab{sub}};
+      \node[smallgraytext] at (2.9,-0.15) {\ttab{cin}};
+      % outputs
+      \draw[thick] (0.9,-0.7) -- ++(0,-0.5) node[below, smallgraytext] {\ttab{s\_i}};
+      \draw[thick] (0,-0.35) -- ++(-0.8,0) node[left, smallgraytext] {\ttab{cout}};
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{this slice is repeated for every bit, sharing the one \ttab{sub} line}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Overflow}
+  \begin{center}
+    \Large \highlight{\textbf{overflow}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  A fixed width can hold only so large a result. When two numbers of the same sign give a result of the opposite sign, the answer has \highlight{\textbf{overflowed}}.\\[3mm]
+  \begin{center}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{r@{\hspace{2mm}}l@{\hspace{8mm}}l}
+       & \ttab{0110} & \graytext{\ttab{6}} \\
+      $+$ & \ttab{0011} & \graytext{\ttab{3}} \\ \hline
+       & \ttab{1001} & \graytext{\ttab{-7}, not \ttab{9}} \\
+    \end{tabular}
+  \end{center}
+  \vspace{1mm}
+  \begin{center}
+    \graytext{the processor records this in an overflow flag}
   \end{center}
 \end{frame}
 

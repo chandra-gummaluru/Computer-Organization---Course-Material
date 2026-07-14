@@ -63,6 +63,18 @@
   \end{center}
 \end{frame}
 
+\begin{frame}
+  There are two styles, differing in where the output comes from.\\[3mm]
+  \begin{itemize}
+    \item \highlight{\textbf{Moore machine}}: \graytext{the output depends only on the current state} \\[2mm]
+    \item \highlight{\textbf{Mealy machine}}: \graytext{the output depends on the state and the input}
+  \end{itemize}
+  \vspace{3mm}
+  \begin{center}
+    \graytext{we use Moore machines, so each state carries its own output}
+  \end{center}
+\end{frame}
+
 % ------------------------------------------------------------
 % structure
 % ------------------------------------------------------------
@@ -106,6 +118,48 @@
       \ttab{1} & coin & \ttab{1} \\
       \ttab{1} & push & \ttab{0} \\
     \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The number of flip-flops follows from the number of states, since each flip-flop stores one bit.\\[4mm]
+  \begin{center}
+    \highlight{\text{flip-flops} = \lceil \log_2(\text{states}) \rceil}
+  \end{center}
+  \vspace{2mm}
+  \begin{center}
+    \graytext{two states need one flip-flop, five states need three}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  Which pattern we assign to each state matters. If two bits must change on one transition, they may not change at the same instant, and the machine can pass through a wrong state.\\[3mm]
+  \begin{center}
+    \graytext{where possible, assign patterns so neighbouring states differ by a single bit}
+  \end{center}
+\end{frame}
+
+% ------------------------------------------------------------
+% design procedure
+% ------------------------------------------------------------
+\begin{frame}{The Design Procedure}
+  \begin{center}
+    \Large \highlight{\textbf{the design procedure}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  Designing any finite state machine follows the same steps.\\[3mm]
+  \begin{itemize}
+    \item[(1)] \graytext{draw the state diagram} \\[1.5mm]
+    \item[(2)] \graytext{write the state table} \\[1.5mm]
+    \item[(3)] \graytext{assign a bit pattern to each state} \\[1.5mm]
+    \item[(4)] \graytext{rewrite the table with those patterns} \\[1.5mm]
+    \item[(5)] \graytext{design the logic for the outputs and each flip-flop input}
+  \end{itemize}
+  \vspace{2mm}
+  \begin{center}
+    \graytext{step five is just the combinational design we already know}
   \end{center}
 \end{frame}
 
