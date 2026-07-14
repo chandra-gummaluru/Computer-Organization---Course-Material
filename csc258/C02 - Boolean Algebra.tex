@@ -46,7 +46,7 @@
     \item \highlight{a + b} \\
           \graytext{the OR of \ttab{a} and \ttab{b}} \\[2mm]
     \item \highlight{\overline{a}} \\
-          \graytext{the NOT of \ttab{a}}
+          \graytext{the NOT of \ttab{a}, also written $a'$ or $\lnot a$}
   \end{itemize}
   \vspace{2mm}
   A \highlight{\textbf{Boolean expression}} combines these to describe a circuit.
@@ -87,6 +87,21 @@
   \end{center}
 \end{frame}
 
+\begin{frame}
+  Two more laws let us delete terms that add nothing. They are worth memorising, since they remove gates.\\[4mm]
+  \begin{center}
+    \renewcommand{\arraystretch}{2.0}
+    \begin{tabular}{r@{\hspace{6mm}}l}
+      \graytext{absorption} & $a + a \cdot b = a$ \\
+      \graytext{consensus}  & $a \cdot b + \overline{a} \cdot c + b \cdot c = a \cdot b + \overline{a} \cdot c$ \\
+    \end{tabular}
+  \end{center}
+  \vspace{2mm}
+  \begin{center}
+    \graytext{in each, the removed term was already covered by the others}
+  \end{center}
+\end{frame}
+
 % ------------------------------------------------------------
 % De Morgan
 % ------------------------------------------------------------
@@ -109,6 +124,40 @@
   \begin{center}
     \graytext{these let us rewrite any circuit using only NAND or only NOR gates}
   \end{center}
+\end{frame}
+
+\begin{frame}
+  This matters because a \highlight{\textbf{NAND}} is the cheapest gate to build. De Morgan lets us turn any sum of products into an all-NAND circuit.\\[3mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.85, transform shape]
+      % left: AND-AND-OR (sum of products)
+      \node[and gate US, draw, thick, scale=1.1] (g1) at (0,0.8) {};
+      \node[and gate US, draw, thick, scale=1.1] (g2) at (0,-0.8) {};
+      \node[or gate US, draw, thick, scale=1.1] (o) at (1.8,0) {};
+      \foreach \g/\a/\b in {g1/a/b, g2/c/d} {
+        \draw[thick] (\g.input 1) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{\a}};
+        \draw[thick] (\g.input 2) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{\b}};
+      }
+      \draw[thick] (g1.output) -| (o.input 1);
+      \draw[thick] (g2.output) -| (o.input 2);
+      \draw[thick] (o.output) -- ++(0.4,0);
+
+      \node at (3.4,0) {\Large $\equiv$};
+
+      % right: all NAND
+      \node[nand gate US, draw, thick, scale=1.1] (n1) at (4.8,0.8) {};
+      \node[nand gate US, draw, thick, scale=1.1] (n2) at (4.8,-0.8) {};
+      \node[nand gate US, draw, thick, scale=1.1] (n3) at (6.6,0) {};
+      \foreach \g/\a/\b in {n1/a/b, n2/c/d} {
+        \draw[thick] (\g.input 1) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{\a}};
+        \draw[thick] (\g.input 2) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{\b}};
+      }
+      \draw[thick] (n1.output) -| (n3.input 1);
+      \draw[thick] (n2.output) -| (n3.input 2);
+      \draw[thick] (n3.output) -- ++(0.4,0);
+    \end{tikzpicture}
+  \end{figure}
 \end{frame}
 
 % ------------------------------------------------------------
