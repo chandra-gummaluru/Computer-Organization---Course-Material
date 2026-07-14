@@ -1,0 +1,139 @@
+\documentclass[mathserif, handout]{beamer}
+
+\usepackage{url}
+\input{includes}
+\input{tikz_figures}
+
+\newcommand{\ttab}[1]{\texttt{#1}}
+
+% title
+\title{Processor Architecture}
+\subtitle{Computer Organization}
+\author[C. Gummaluru]{Chandra Gummaluru}
+\titlegraphic{\includegraphics[width=0.15\linewidth]{images/signature.pdf}}
+\institute[]{\url{chandra-gummaluru.github.io} }
+\date[Computer Organization]{}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \highlight{\textbf{processor}} \\[2mm]
+    \graytext{the part of a computer that fetches \\ instructions and carries them out}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  A processor has two parts that work together:\\[3mm]
+  \begin{itemize}
+    \item \highlight{\textbf{datapath}}: \graytext{the components that store and transform data} \\[2mm]
+    \item \highlight{\textbf{control}}: \graytext{the logic that directs the datapath, step by step}
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+% datapath
+% ------------------------------------------------------------
+\begin{frame}{The Datapath}
+  \begin{center}
+    \Large \highlight{\textbf{the datapath}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The datapath connects the parts we have already built. Data flows from memory, through the registers and ALU, and back again.\\[2mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth, box/.style={draw, thick, fill=gray!30!white!20, align=center, minimum height=1.0cm}]
+      \node[box, minimum width=0.9cm] (pc) at (0,0) {\ttab{PC}};
+      \node[box, minimum width=1.4cm] (im) at (2.0,0) {instr\\ memory};
+      \node[box, minimum width=1.4cm] (rf) at (4.4,0) {registers};
+      \node[box, minimum width=1.0cm] (alu) at (6.6,0) {\small ALU};
+      \node[box, minimum width=1.4cm] (dm) at (8.8,0) {data\\ memory};
+
+      \draw[thick, ->] (pc) -- (im);
+      \draw[thick, ->] (im) -- (rf);
+      \draw[thick, ->] (rf) -- (alu);
+      \draw[thick, ->] (alu) -- (dm);
+      % write-back from data memory to registers
+      \draw[thick, ->] (dm.south) -- ++(0,-0.9) -| (rf.south) node[pos=0.25, below, smallgraytext] {write back};
+      % program counter advance
+      \draw[thick, ->] (pc.north) -- ++(0,0.7) -| ($(pc.north)+(-0.9,0)$) -- (pc.west);
+      \node[smallgraytext] at (-1.35,0.7) {\small$+1$};
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+% ------------------------------------------------------------
+% control
+% ------------------------------------------------------------
+\begin{frame}{Control}
+  \begin{center}
+    \Large \highlight{\textbf{control}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The \highlight{\textbf{control unit}} is a finite state machine. It reads the current instruction and sends the signals that steer the datapath.\\[2mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth]
+      \node[draw, thick, fill=gray!30!white!20, minimum width=2.4cm, minimum height=1.0cm, align=center] (cu) at (0,1.6) {control unit};
+      \node[draw, thick, fill=gray!30!white!20, minimum width=5.0cm, minimum height=1.0cm] (dp) at (0,0) {datapath};
+      \draw[thick, ->, dashed] (-1.5,1.1) -- (-1.5,0.5);
+      \draw[thick, ->, dashed] (0,1.1) -- (0,0.5);
+      \draw[thick, ->, dashed] (1.5,1.1) -- (1.5,0.5);
+      \node[smallgraytext, right] at (2.7,0.8) {control signals};
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{each state of the machine applies one step of an instruction}
+  \end{center}
+\end{frame}
+
+% ------------------------------------------------------------
+% instruction cycle
+% ------------------------------------------------------------
+\begin{frame}{The Instruction Cycle}
+  \begin{center}
+    \Large \highlight{\textbf{the instruction cycle}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The control unit repeats the same cycle for every instruction.\\[3mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth]
+      \node[draw, thick, circle, minimum size=15mm, align=center] (f) at (0,0) {fetch};
+      \node[draw, thick, circle, minimum size=15mm, align=center] (d) at (3,0) {decode};
+      \node[draw, thick, circle, minimum size=15mm, align=center] (e) at (6,0) {execute};
+      \draw[thick, ->] (f) -- (d);
+      \draw[thick, ->] (d) -- (e);
+      \draw[thick, ->] (e) to[out=250, in=290] (f);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{fetch the instruction, decode what it means, then carry it out}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{itemize}
+    \item \highlight{\textbf{fetch}}: \graytext{read the instruction at the program counter} \\[2mm]
+    \item \highlight{\textbf{decode}}: \graytext{work out which operation and operands it names} \\[2mm]
+    \item \highlight{\textbf{execute}}: \graytext{perform the operation and store the result}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    The datapath does the work and the control unit directs it. What each instruction means is defined by the assembly language, which we cover next.
+  \end{center}
+\end{frame}
+
+\end{document}

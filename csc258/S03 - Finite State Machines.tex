@@ -1,0 +1,118 @@
+\documentclass[mathserif, handout]{beamer}
+
+\usepackage{url}
+\input{includes}
+\input{tikz_figures}
+
+\newcommand{\ttab}[1]{\texttt{#1}}
+
+% title
+\title{Finite State Machines}
+\subtitle{Computer Organization}
+\author[C. Gummaluru]{Chandra Gummaluru}
+\titlegraphic{\includegraphics[width=0.15\linewidth]{images/signature.pdf}}
+\institute[]{\url{chandra-gummaluru.github.io} }
+\date[Computer Organization]{}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \highlight{\textbf{finite state machine}} \\[2mm]
+    \graytext{a circuit that moves through a fixed \\ set of states as inputs arrive}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  A finite state machine is described by three things:\\[3mm]
+  \begin{itemize}
+    \item \highlight{\textbf{states}}: \graytext{the situations the machine can be in} \\[2mm]
+    \item \highlight{\textbf{transitions}}: \graytext{how each input moves it between states} \\[2mm]
+    \item \highlight{\textbf{outputs}}: \graytext{what it produces in each state}
+  \end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+% state diagram
+% ------------------------------------------------------------
+\begin{frame}{State Diagrams}
+  \begin{center}
+    \Large \highlight{\textbf{state diagrams}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  A \highlight{\textbf{state diagram}} draws each state as a circle and each transition as a labelled arrow. Here is a turnstile that a coin unlocks.\\[3mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth, node distance=32mm]
+      \node[draw, thick, circle, minimum size=15mm, align=center] (L) at (0,0) {locked};
+      \node[draw, thick, circle, minimum size=15mm, align=center] (U) at (4.5,0) {unlocked};
+      \path[thick, ->] (L) edge[bend left=20] node[above, smallgraytext] {coin} (U);
+      \path[thick, ->] (U) edge[bend left=20] node[below, smallgraytext] {push} (L);
+      \path[thick, ->] (L) edge[loop above] node[smallgraytext] {push} (L);
+      \path[thick, ->] (U) edge[loop above] node[smallgraytext] {coin} (U);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{a coin unlocks it, a push through it locks it again}
+  \end{center}
+\end{frame}
+
+% ------------------------------------------------------------
+% structure
+% ------------------------------------------------------------
+\begin{frame}{Structure}
+  \begin{center}
+    \Large \highlight{\textbf{structure}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  Every finite state machine has the same shape: a register holds the state, and combinational logic computes the next state and the output.\\[2mm]
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth]
+      \node[draw, thick, minimum width=2.1cm, minimum height=1.1cm, fill=gray!30!white!20, align=center] (ns) at (0,0) {next-state\\ logic};
+      \node[draw, thick, minimum width=1.8cm, minimum height=1.1cm, fill=gray!30!white!20, align=center] (reg) at (3.2,0) {state\\ register};
+      \node[draw, thick, minimum width=1.8cm, minimum height=1.1cm, fill=gray!30!white!20, align=center] (out) at (6.2,0) {output\\ logic};
+
+      \draw[thick, ->] (-1.5,0.3) node[left, smallgraytext] {input} -- (ns.west |- 0,0.3);
+      \draw[thick, ->] (ns.east) -- (reg.west);
+      \draw[thick, ->] (reg.east) -- (out.west) node[midway, above, smallgraytext] {state};
+      \draw[thick, ->] (out.east) -- ++(0.7,0) node[above, smallgraytext] {output};
+      % feedback of state back into next-state logic
+      \draw[thick, ->] (4.1,0) |- (0,-1.6) -| (ns.south);
+      \fill (4.1,0) circle (1.6pt);
+      % clock into the register (short stub, offset from the feedback path)
+      \draw[thick] (3.2,-1.05) -- ++(0,-0.55) node[below, smallgraytext] {clk};
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  We give each state a bit pattern. The next-state logic is then just a truth table from the current state and input to the next state.\\[3mm]
+  \begin{center}
+    \graytext{\ttab{locked}$=$\ttab{0} \hspace{8mm} \ttab{unlocked}$=$\ttab{1}} \\[4mm]
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{cc|c}
+      \graytext{state} & \graytext{input} & \graytext{next} \\ \hline
+      \ttab{0} & coin & \ttab{1} \\
+      \ttab{0} & push & \ttab{0} \\
+      \ttab{1} & coin & \ttab{1} \\
+      \ttab{1} & push & \ttab{0} \\
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    A finite state machine combines everything so far: gates compute the next state, and a register remembers it. This is how a processor is controlled.
+  \end{center}
+\end{frame}
+
+\end{document}

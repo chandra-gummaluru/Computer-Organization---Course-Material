@@ -1,0 +1,146 @@
+\documentclass[mathserif, handout]{beamer}
+
+\usepackage{url}
+\input{includes}
+\input{tikz_figures}
+
+\usetikzlibrary{shapes.gates.logic.US}
+
+\newcommand{\ttab}[1]{\texttt{#1}}
+
+% title
+\title{Boolean Algebra}
+\subtitle{Computer Organization}
+\author[C. Gummaluru]{Chandra Gummaluru}
+\titlegraphic{\includegraphics[width=0.15\linewidth]{images/signature.pdf}}
+\institute[]{\url{chandra-gummaluru.github.io} }
+\date[Computer Organization]{}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \highlight{\textbf{Boolean algebra}} \\[2mm]
+    \graytext{a set of rules for writing and simplifying \\ expressions over binary values}
+  \end{center}
+\end{frame}
+
+% ------------------------------------------------------------
+% notation
+% ------------------------------------------------------------
+\begin{frame}{Notation}
+  \begin{center}
+    \Large \highlight{\textbf{notation}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  We write the three basic gates as operations on variables:\\[3mm]
+  \begin{itemize}
+    \item \highlight{a \cdot b} \\
+          \graytext{the AND of \ttab{a} and \ttab{b}} \\[2mm]
+    \item \highlight{a + b} \\
+          \graytext{the OR of \ttab{a} and \ttab{b}} \\[2mm]
+    \item \highlight{\overline{a}} \\
+          \graytext{the NOT of \ttab{a}}
+  \end{itemize}
+  \vspace{2mm}
+  A \highlight{\textbf{Boolean expression}} combines these to describe a circuit.
+\end{frame}
+
+% ------------------------------------------------------------
+% laws
+% ------------------------------------------------------------
+\begin{frame}{Laws}
+  \begin{center}
+    \Large \highlight{\textbf{laws}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  Each law comes in two forms, one for AND and one for OR.\\[4mm]
+  \begin{center}
+    \renewcommand{\arraystretch}{1.6}
+    \begin{tabular}{r@{\hspace{6mm}}c@{\hspace{10mm}}c}
+      \graytext{identity}   & $a \cdot 1 = a$          & $a + 0 = a$          \\
+      \graytext{null}       & $a \cdot 0 = 0$          & $a + 1 = 1$          \\
+      \graytext{idempotent} & $a \cdot a = a$          & $a + a = a$          \\
+      \graytext{complement} & $a \cdot \overline{a} = 0$ & $a + \overline{a} = 1$ \\
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  Expressions can also be reordered and regrouped, just like in ordinary algebra.\\[4mm]
+  \begin{center}
+    \renewcommand{\arraystretch}{1.8}
+    \begin{tabular}{r@{\hspace{6mm}}l}
+      \graytext{commutative} & $a \cdot b = b \cdot a$ \\
+      \graytext{associative} & $a \cdot (b \cdot c) = (a \cdot b) \cdot c$ \\
+      \graytext{distributive} & $a \cdot (b + c) = a \cdot b + a \cdot c$ \\
+      \graytext{involution}   & $\overline{\overline{a}} = a$ \\
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+% ------------------------------------------------------------
+% De Morgan
+% ------------------------------------------------------------
+\begin{frame}{De Morgan's Laws}
+  \begin{center}
+    \Large \highlight{\textbf{De Morgan's laws}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  Negating an AND or an OR flips the operation and negates each input.\\[6mm]
+  \begin{center}
+    \renewcommand{\arraystretch}{2.2}
+    \begin{tabular}{c}
+      $\overline{a \cdot b} = \overline{a} + \overline{b}$ \\
+      $\overline{a + b} = \overline{a} \cdot \overline{b}$ \\
+    \end{tabular}
+  \end{center}
+  \vspace{2mm}
+  \begin{center}
+    \graytext{these let us rewrite any circuit using only NAND or only NOR gates}
+  \end{center}
+\end{frame}
+
+% ------------------------------------------------------------
+% simplification
+% ------------------------------------------------------------
+\begin{frame}{Simplification}
+  \begin{center}
+    \Large \highlight{\textbf{simplification}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  A simpler expression means fewer gates. We reduce an expression by applying the laws in turn.\\[5mm]
+  \begin{center}
+    \renewcommand{\arraystretch}{1.8}
+    \begin{tabular}{r@{\hspace{4mm}}l@{\hspace{8mm}}l}
+      $y$ & $= a \cdot b + a \cdot \overline{b}$ & \\
+          & $= a \cdot (b + \overline{b})$ & \graytext{distributive} \\
+          & $= a \cdot 1$                  & \graytext{complement} \\
+          & $= a$                          & \graytext{identity} \\
+    \end{tabular}
+  \end{center}
+  \vspace{3mm}
+  \begin{center}
+    \graytext{two gates become none}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    Next we will design a circuit for any truth table, then use these laws to make it small.
+  \end{center}
+\end{frame}
+
+\end{document}
