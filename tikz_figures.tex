@@ -2,17 +2,6 @@
 % Premade TikZ Figure Commands
 % ===========================
 
-\tikzset{
-	dsnode/.style={
-			draw=black,
-			thick,
-			rectangle,
-			minimum height=10mm,
-			minimum width=15mm,
-			fill=lightgray!05
-		}
-}
-
 % images w/ labels
 % inside tikz as a node
 \NewDocumentCommand{\labeledimgnodetikz}{O{} m m m m m m}{%
@@ -166,25 +155,6 @@
 	\end{tikzpicture}%
 }
 
-\NewDocumentCommand{\bdevicelabel}{m}{%
-	\begin{tikzpicture}[baseline=(current bounding box.center)]
-		\begin{scope}[shift={(0.85,0.7)}]
-			\node[
-				rectangle,
-				draw,
-				thick,
-				fill=black!55,
-				rounded corners=0.1mm,
-				inner sep=0pt,
-				outer sep=0pt,
-				minimum size=2.8mm,
-				minimum width=3.5mm,
-				opacity=0
-			] at (0,0) {\footnotesize #2};
-		\end{scope}
-	\end{tikzpicture}%
-}
-
 \NewDocumentCommand{\packetid}{mmmm}{%
 	\begin{tikzpicture}[baseline=(current bounding box.center)]
 		\begin{scope}[shift={(0.85,0.7)}]
@@ -203,24 +173,6 @@
 			] at (0,0) {};
 			\node at (0,0) {\footnotesize #1};
 		\end{scope}
-	\end{tikzpicture}%
-}
-
-\NewDocumentCommand{\packeticon}{m O{white}}{%
-	\begin{tikzpicture}[baseline=(current bounding box.center)]
-		\node[
-			star,
-			star points=30,
-			star point ratio=0,
-			scale=1.5,
-			draw=black,
-			thick,
-			fill=#2,
-			rounded corners=0.1mm,
-			inner sep=0pt,
-			minimum size=2.8mm
-		] at (0,0) {};
-		\node at (0,0) {\footnotesize #1};
 	\end{tikzpicture}%
 }
 

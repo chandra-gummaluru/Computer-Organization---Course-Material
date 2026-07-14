@@ -11,7 +11,6 @@
 % ------------------------------------------------------------
 \usepackage{url}
 \usepackage{ifthen}
-\usepackage{comment}
 \usepackage{enumerate}
 \usepackage[font=small]{caption}
 \usepackage{subcaption}
@@ -33,27 +32,16 @@
 % ------------------------------------------------------------
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
-\DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\argmin}{arg\,min}
 
 % ------------------------------------------------------------
 % colors
 % ------------------------------------------------------------
 \definecolor{hl}{RGB}{248,196,69}
-\definecolor{mytransparent}{RGBA}{250,150,24,0.5}
 \definecolor{myred}{HTML}{ED5565}
 \definecolor{myorange}{HTML}{FC6E51}
 \definecolor{myyellow}{HTML}{FFCE54}
-\definecolor{mygreen}{HTML}{A0D469}
-\definecolor{myteal}{HTML}{48CFAD}
 \definecolor{mycyan}{HTML}{4FC1E9}
 \definecolor{myblue}{HTML}{5D9CEC}
-\definecolor{mypurple}{HTML}{AC92EC}
-\definecolor{mypink}{HTML}{EC87C0}
-\definecolor{green1}{HTML}{C0C490}
-\definecolor{blue1}{HTML}{CADCD7}
-\definecolor{green2}{HTML}{B7C6AB}
-\definecolor{gray1}{HTML}{B3B1A5}
 
 \newcommand{\graytext}[1]{\footnotesize\color{gray}#1\normalsize\color{black}}
 
@@ -71,7 +59,6 @@
   \begingroup\setlength{\fboxsep}{0pt}\colorbox{hl}{\reducedstrut$\displaystyle #1$\/}\endgroup}
 \newcommand{\highlightc}[2]{%
   \begingroup\setlength{\fboxsep}{0pt}\colorbox{#1}{\reducedstrut$\displaystyle #2$\/}\endgroup}
-\def\HiLi{\leavevmode\rlap{\hbox to \hsize{\color{yellow!50}\leaders\hrule height .8\baselineskip depth .5ex\hfill}}}
 
 % ------------------------------------------------------------
 % environments (boxes)
@@ -148,10 +135,6 @@
 % code listings
 % ------------------------------------------------------------
 \usepackage{listings}
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
 \lstdefinestyle{mypython}{
   language=Python,
   deletekeywords=[2]{open, next, from, chr, str, int},
@@ -207,31 +190,13 @@ keywordstyle=[5]\color{mycyan}\bfseries,
 \usetikzlibrary{
   angles, quotes, positioning, fit, backgrounds, shapes.geometric, intersections,
   calc, shapes, mindmap, decorations.text, arrows, arrows.meta,
-  automata, chains, decorations.pathreplacing, calligraphy, backgrounds,
+  automata, chains, decorations.pathreplacing, calligraphy,
   decorations.markings, shapes.misc, decorations.pathmorphing
 }
 \tikzset{
   invisible/.style={opacity=0},
   visible on/.style={alt=#1{}{invisible}},
-  alt/.code args={<#1>#2#3}{\alt<#1>{\pgfprioritysalso{#2}}{\pgfprioritysalso{#3}}},
-  right triangle/.style={
-    draw, thick, fill=myyellow,
-    shape border rotate=0,
-    shape=isosceles triangle,
-    isosceles triangle apex angle=90,
-    minimum size=1mm, inner sep=0pt, anchor=center
-  },
-  set arrow inside/.code={\pgfqkeys{/tikz/arrow inside}{#1}},
-  set arrow inside={end/.initial=>, opt/.initial=},
-  /pgf/decoration/Mark/.style={
-    mark/.expanded=at position #1 with
-    {\noexpand\arrow[\pgfkeysvalueof{/tikz/arrow inside/opt}]
-     {\pgfkeysvalueof{/tikz/arrow inside/end}}}
-  },
-  arrow inside/.style 2 args={
-    set arrow inside={#1},
-    postaction={decorate, decoration={markings, Mark/.list={#2}}}
-  }
+  alt/.code args={<#1>#2#3}{\alt<#1>{\pgfprioritysalso{#2}}{\pgfprioritysalso{#3}}}
 }
 
 \newcommand{\multiedge}[5][]{
@@ -274,8 +239,3 @@ keywordstyle=[5]\color{mycyan}\bfseries,
 \setbeamertemplate{itemize subsubitem}{-}
 \setbeamercolor{item}{fg=black!40}
 \setbeamercovered{transparent=10}
-
-% ------------------------------------------------------------
-% pgfplots compatibility
-% ------------------------------------------------------------
-\pgfplotsset{compat=1.7}
