@@ -1,0 +1,521 @@
+\documentclass[mathserif, handout]{beamer}
+\input{includes}
+\input{tikz_figures}
+
+% title
+\title{Path-Finding Problems}
+\subtitle{Algorithms and Data Structures}
+\author[C. Gummaluru]{Chandra Gummaluru}
+\titlegraphic{\includegraphics[width=0.15\linewidth]{images/signature.pdf}}
+\institute[]{\url{chandra-gummaluru.github.io} }
+\date[Algorithms and Data Structures]{}
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\iffalse
+  \begin{frame}{Path-Finding Problems}
+  \end{frame}
+\fi
+
+\begin{frame}
+  \begin{center}
+    \Large \highlight{\textbf{path-finding problems}}\\[1mm]
+    \normalsize\color{gray} (discovery, routing, loop detection)
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{thmbox}
+    \highlight{\textbf{path-finding problems}}: \\
+    \graytext{(discovery, routing, loop detection)} \\[2mm]
+    \highlightc{myyellow!60}{\textbf{assumptions}}:
+    \begin{itemize}
+      \item a weighted graph, $\mathcal{G} = (V,E, \textsf{wgt},\dots)$, is given
+      \item $\textsf{wgt}(e) > 0$ for all $e \in E$
+      \item a starting vertex, $v^{(0)} \in V$, is specified
+      \item a subset $G \subseteq V$ is given denoting goal vertices
+    \end{itemize}
+
+    \highlightc{myyellow!60}{\textbf{goals}}:
+    \begin{itemize}
+      \item find a path, $p$, with $\textsf{org}(p) = v^{(0)}$ and $\textsf{dst}(p) \in G$
+      \item if multiple such paths exist, return the one with the least weight
+      \item if no such path exists, return \texttt{None}
+    \end{itemize}
+
+  \end{thmbox}
+\end{frame}
+
+\begin{frame}
+  A path-finding algorithm explores a tree of possible paths:
+  \begin{figure}
+    \begin{tikzpicture}[
+        auto,
+        node distance = 2cm,
+        semithick % line style
+      ]
+
+      \imgnodetikz[defaultnode]{empty}{0.5}{0}{server}{images/server.png}{0.052};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{-3}{-2}{towerA_2_1}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3.75}{-2}{towerB_2_2}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{-4.5}{-4}{server_3_1}{images/server.png}{0.052};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{-3}{-4}{towerA_3_1}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{-1.5}{-4}{towerC_3_1}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{1.5}{-4}{server_3_2}{images/server.png}{0.052};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{3}{-4}{towerA_3_2}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4.5}{-4}{towerC_3_2}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{-4}{towerD_3_2}{images/radio_tower.png}{0.044};
+
+      \draw[defaultnode, ->] (server) edge node[above left] {$4$} (towerA_2_1);
+      \draw[defaultnode, ->] (server) edge node[above right] {$8$} (towerB_2_2);
+
+      \draw[defaultnode, ->] (towerA_2_1) edge node[above left] {$4$} (server_3_1);
+      \draw[defaultnode, ->] (towerA_2_1) edge node[left=-2mm] {$11$} (towerA_3_1);
+      \draw[defaultnode, ->] (towerA_2_1) edge node[above right] {$8$} (towerC_3_1);
+
+      \draw[defaultnode, ->] (towerB_2_2) edge node [above left] {$8$} (server_3_2);
+      \draw[defaultnode, ->] (towerB_2_2) edge node [left=-2mm] {$11$} (towerA_3_2);
+      \draw[defaultnode, ->] (towerB_2_2) edge node [right=-2mm] {$7$} (towerC_3_2);
+      \draw[defaultnode, ->] (towerB_2_2) edge node [above right] {$1$} (towerD_3_2);
+
+      \node at (0,-5.25) {$\vdots$};
+    \end{tikzpicture}
+  \end{figure}
+  \;
+\end{frame}
+
+\begin{frame}
+  In such a tree, each vertex represents the path from the root to itself:
+  \begin{figure}
+    \begin{tikzpicture}[
+        auto,
+        node distance = 2cm,
+        semithick % line style
+      ]
+
+      \imgnodetikz[defaultnode]{empty}{0.5}{0}{server}{images/server.png}{0.052};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{-3}{-2}{towerA_2_1}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3.75}{-2}{towerB_2_2}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{-4.5}{-4}{server_3_1}{images/server.png}{0.052};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{-3}{-4}{towerA_3_1}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{-1.5}{-4}{towerC_3_1}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{1.5}{-4}{server_3_2}{images/server.png}{0.052};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{3}{-4}{towerA_3_2}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4.5}{-4}{towerC_3_2}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{-4}{towerD_3_2}{images/radio_tower.png}{0.044};
+
+      \draw[defaultnode, ->] (server) edge node[above left] {$4$} (towerA_2_1);
+      \draw[defaultnode, ->] (server) edge node[above right] {$8$} (towerB_2_2);
+
+      \draw[defaultnode, ->] (towerA_2_1) edge node[above left] {$4$} (server_3_1);
+      \draw[defaultnode, ->] (towerA_2_1) edge node[left=-2mm] {$11$} (towerA_3_1);
+      \draw[defaultnode, ->] (towerA_2_1) edge node[above right] {$8$} (towerC_3_1);
+
+      \draw[defaultnode, ->] (towerB_2_2) edge node [above left] {$8$} (server_3_2);
+      \draw[defaultnode, ->] (towerB_2_2) edge node [left=-2mm] {$11$} (towerA_3_2);
+      \draw[defaultnode, ->] (towerB_2_2) edge node [right=-2mm] {$7$} (towerC_3_2);
+      \draw[defaultnode, ->] (towerB_2_2) edge node [above right] {$1$} (towerD_3_2);
+
+      \node at (0,-5.25) {$\vdots$};
+
+      \draw[very thick] (-4.5,-4) -- (-4,-4);
+      \draw[draw=black, very thick, fill=white, fill opacity=0.9] (-4,-3) rectangle (6.75,-5);
+      \node at (1.35,-4) {$ \bigg(\left\langle\left(\varnothing, \includegraphics[align=c, scale=0.045]{images/server.png}, 0\right), \left(\includegraphics[align=c, scale=0.045]{images/server.png}, \imgnodetikzabelnomargin{\texttt{A}}, 4\right), \left(\imgnodetikzabelnomargin{\texttt{A}}, \includegraphics[align=c, scale=0.045]{images/server.png}, 4\right)\right\rangle, 2, 8,  \includegraphics[align=c, scale=0.045]{images/server.png}, \includegraphics[align=c, scale=0.045]{images/server.png}\bigg)$};
+    \end{tikzpicture}
+  \end{figure}
+  \vspace{-5mm}
+  The vertex may also include other info (such as the path's origin, cost, ...)
+\end{frame}
+
+\begin{frame}
+  \begin{proofbox}
+    \highlight{\textbf{path-finding algorithms}}:
+    \begin{enumerate}
+      \item \highlightc{myyellow!60}{\textbf{explore an open path}} \\
+            \graytext{choose one of the open paths to explore; if there are none, stop and return \texttt{None} (no solution)}
+
+      \item \highlightc{myyellow!60}{\textbf{check for goal:}} \\
+            \graytext{if the chosen path is goal-terminating, stop and return the chosen path (solution found)}
+
+      \item \highlightc{myyellow!60}{\textbf{expand/export chosen path:}} \\
+            \graytext{expand the chosen path and export them as new open paths}
+    \end{enumerate}
+
+  \end{proofbox}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{thmboxtop}
+    \begin{lstlisting}[style=mypython]
+class Path:
+# attributes
+    # a list of edges representing the path
+    edges: List[Edge]
+    
+    # the number of edges in the path
+    length: Integer
+    
+    # the cumulative weight of the edges in the path
+    weight: Integer
+
+    # the origin of this path
+    org: Vertex
+
+    # the destination of this path
+    dst: Vertex
+\end{lstlisting}
+  \end{thmboxtop}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \begin{thmboxbot}
+    \begin{lstlisting}[style=mypython, firstnumber=last]
+    def expand(self: Path, e: Edge) -> Path:
+        new_path = Path(
+            self.edges,
+            self.length,
+            self.weight,
+            self.org,
+            self.dst)
+            
+        if edge.from.key is self.dst.key:
+            new_path.edges.append(e)
+            new_path.length += 1
+            new_path.wgt += edge.wgt
+            new_path.dst = edge.to
+        return new_path
+\end{lstlisting}
+  \end{thmboxbot}
+\end{frame}
+
+\begin{frame}[fragile]
+  \vspace{-5mm}
+  \begin{thmboxtop}
+    \begin{lstlisting}[style=mypython]
+def find_path(graph: Graph, goals: Dict[Vertex*, Vertex], start: Vertex*) -> Optional[Path]:
+    # helper
+    def _find_path(graph: Graph goals: Dict[Vertex*, Vertex], open: Queue[Path]) -> Optional[Path]:
+        if open.size is 0:
+            return None
+        # explore
+        path = open.pop()
+        if goals.get(path.dst.key) is not None:
+            return path
+        for edge in graph.get_edges_from(path.dst.key):
+            # expand
+            new_path = path.expand(edge)
+            # export
+            open.push(self._pri(new_path), new_path)
+        return self.find_path(self, graph, goals, open)
+\end{lstlisting}
+  \end{thmboxtop}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{thmboxbot}
+    \begin{lstlisting}[style=mypython, firstnumber=last]
+    open = Queue()
+
+    # create a dummy path
+    dummy = Path()
+    dummy.dst = start
+    open.push(0, dummy)
+    
+    return self._find_path(goals, open)
+\end{lstlisting}
+  \end{thmboxbot}
+\end{frame}
+
+
+\begin{frame}
+  To make the algorithm more efficient, we can employ cycle-checking: \\~\\
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{intra-path}} \\[2mm]
+    \graytext{prevents revisiting vertices \\ within the same path}
+    \\[1em]
+    \scalebox{0.5}{
+      \begin{tikzpicture}[
+          auto,
+          node distance = 2cm,
+          very thick % line style
+        ]
+
+        \imgnodetikz[defaultnode, very thick]{empty}{0.5}{0}{server}{images/server.png}{0.052};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{A}}{-3}{-2}{towerA_2_1}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{B}}{3.75}{-2}{towerB_2_2}{images/radio_tower.png}{0.044};
+        \imgnodetikz[newnode, very thick]{empty}{-4.5}{-4}{server_3_1}{images/server.png}{0.052};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{B}}{-3}{-4}{towerA_3_1}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{C}}{-1.5}{-4}{towerC_3_1}{images/radio_tower.png}{0.044};
+        \imgnodetikz[newnode, very thick]{empty}{1.5}{-4}{server_3_2}{images/server.png}{0.052};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{A}}{3}{-4}{towerA_3_2}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{C}}{4.5}{-4}{towerC_3_2}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{D}}{6}{-4}{towerD_3_2}{images/radio_tower.png}{0.044};
+
+        \draw[defaultnode, ->] (server) edge node[above left] {$4$} (towerA_2_1);
+        \draw[defaultnode, ->] (server) edge node[above right] {$8$} (towerB_2_2);
+        \draw[defaultnode, ->] (towerA_2_1) edge node[above left] {$4$} (server_3_1);
+        \draw[defaultnode, ->] (towerA_2_1) edge node[left=-2mm] {$11$} (towerA_3_1);
+        \draw[defaultnode, ->] (towerA_2_1) edge node[above right] {$8$} (towerC_3_1);
+        \draw[defaultnode, ->] (towerB_2_2) edge node [above left] {$8$} (server_3_2);
+        \draw[defaultnode, ->] (towerB_2_2) edge node [left=-2mm] {$11$} (towerA_3_2);
+        \draw[defaultnode, ->] (towerB_2_2) edge node [right=-2mm] {$7$} (towerC_3_2);
+        \draw[defaultnode, ->] (towerB_2_2) edge node [above right] {$1$} (towerD_3_2);
+
+        \node at (0,-5.25) {$\vdots$};
+      \end{tikzpicture}
+    }
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{inter-path}} \\[2mm]
+    \graytext{prevents revising vertices \\ across different paths}
+    \\[1em]
+    \scalebox{0.5}{
+      \begin{tikzpicture}[
+          auto,
+          node distance = 2cm,
+          very thick % line style
+        ]
+
+        \imgnodetikz[defaultnode, very thick]{empty}{0.5}{0}{server}{images/server.png}{0.052};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{A}}{-3}{-2}{towerA_2_1}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[newnode, very thick]{\footnotesize\texttt{B}}{3.75}{-2}{towerB_2_2}{images/radio_tower.png}{0.044};
+        \imgnodetikz[defaultnode, very thick]{empty}{-4.5}{-4}{server_3_1}{images/server.png}{0.052};
+        \labeledimgnodetikz[newnode, very thick]{\footnotesize\texttt{B}}{-3}{-4}{towerA_3_1}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{C}}{-1.5}{-4}{towerC_3_1}{images/radio_tower.png}{0.044};
+        \imgnodetikz[defaultnode, very thick]{empty}{1.5}{-4}{server_3_2}{images/server.png}{0.052};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{A}}{3}{-4}{towerA_3_2}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{C}}{4.5}{-4}{towerC_3_2}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode, very thick]{\footnotesize\texttt{D}}{6}{-4}{towerD_3_2}{images/radio_tower.png}{0.044};
+
+        \draw[line width=0.75mm, <->] (towerB_2_2) edge[bend right] (towerA_3_1);
+
+
+        \draw[defaultnode, ->] (server) edge node[above left] {$4$} (towerA_2_1);
+        \draw[defaultnode, ->] (server) edge node[above right] {$8$} (towerB_2_2);
+        \draw[defaultnode, ->] (towerA_2_1) edge node[above left] {$4$} (server_3_1);
+        \draw[defaultnode, ->] (towerA_2_1) edge node[left=-2mm] {$11$} (towerA_3_1);
+        \draw[defaultnode, ->] (towerA_2_1) edge node[above right] {$8$} (towerC_3_1);
+        \draw[defaultnode, ->] (towerB_2_2) edge node [above left] {$8$} (server_3_2);
+        \draw[defaultnode, ->] (towerB_2_2) edge node [left=-2mm] {$11$} (towerA_3_2);
+        \draw[defaultnode, ->] (towerB_2_2) edge node [right=-2mm] {$7$} (towerC_3_2);
+        \draw[defaultnode, ->] (towerB_2_2) edge node [above right] {$1$} (towerD_3_2);
+
+        \node at (0,-5.25) {$\vdots$};
+      \end{tikzpicture}
+    }
+  \end{minipage}
+
+\end{frame}
+
+\begin{frame}
+  These cycle-checks can happen at explore-time or export-time. \\~\\
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{explore-time}} \\[2mm]
+    \graytext{add a path to the closed set when \\ it is removed from the open queue}
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{export-time}} \\[2mm]
+    \graytext{add a path to the closed set when \\ it is added to the open queue}
+  \end{minipage}
+
+\end{frame}
+
+\iffalse
+  \begin{frame}{Path-Finding Problems (Breadth-First Search)}
+  \end{frame}
+\fi
+
+\begin{frame}
+  \begin{center}
+    \Large \highlight{\textbf{breadth-first search}}\\[1mm]
+    \normalsize\color{gray} (path-finding algorithms)
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{proofbox}
+    \highlight{\textbf{breadth-first search}}: \\
+    \graytext{(path-finding algorithms)} \\[-4mm]
+    \begin{enumerate}
+      \item \highlightc{myyellow!60}{\textbf{explore the shortest open path}} \\
+            \graytext{choose any of the shortest open paths to explore; if there are none, stop and return \texttt{None} (no solution)}
+
+      \item \highlightc{myyellow!60}{\textbf{check for goal:}} \\
+            \graytext{if the chosen path is goal-terminating, stop and return the chosen path (solution found)}
+
+      \item \highlightc{myyellow!60}{\textbf{expand/export chosen path:}} \\
+            \graytext{expand the chosen path and export them as new open paths}
+    \end{enumerate}
+
+  \end{proofbox}
+\end{frame}
+
+
+\begin{frame}
+  \begin{center}
+    \begin{tabular}{@{} r | c @{} }
+      \toprule
+      \highlight{\textbf{Property}}     &           \\[1mm]\hline\\[-2mm]
+      \multirow{1}{*}{Halting}          & \ding{51} \\[1mm]
+      \multirow{1}{*}{Complete}         & \ding{51} \\[1mm]
+      \multirow{1}{*}{Optimal}          & \ding{55} \\[1mm]
+      \multirow{1}{*}{Time Complexity}  & $O(|V|)$  \\[1mm]
+      \multirow{1}{*}{Space Complexity} & $O(|V|)$  \\[1mm]
+    \end{tabular}
+  \end{center}
+  where we define:
+  \begin{itemize}
+    \item \highlight{\textbf{time-complexity}}:\\
+          \graytext{the total number of nodes exported onto the open queue}
+    \item \highlight{\textbf{space-complexity}}:\\
+          \graytext{the maximum number of nodes simultaneously on the open queue}
+  \end{itemize}
+  \begin{center}
+    \graytext{properties of breadth-first search}
+  \end{center}
+  \renewcommand\thefootnote{}\footnotetext{\color{gray} Assumptions:  $V =$ \texttt{Graph.vertices.size}, $E =$ \texttt{Graph.edges.size}, $|V| < \infty$, $|E| < \infty$, inter-path cycle-checking at export time is used}
+\end{frame}
+
+\iffalse
+  \begin{frame}{Path-Finding Problems (Cheapest-First Search)}
+  \end{frame}
+\fi
+
+\begin{frame}
+  \begin{center}
+    \Large \highlight{\textbf{cheapest-first search}} \\[1mm]
+    \normalsize\color{gray} (path-finding problems)
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{proofbox}
+    \highlight{\textbf{cheapest-first search}}: \\
+    \graytext{(path-finding problems)} \\[-4mm]
+    \begin{enumerate}
+      \item \highlightc{myyellow!60}{\textbf{explore the cheapest open path}} \\
+            \graytext{choose one of the cheapest open paths to explore; if there are none, stop and return \texttt{None} (no solution)}
+
+      \item \highlightc{myyellow!60}{\textbf{check for goal:}} \\
+            \graytext{if the chosen path is goal-terminating, stop and return the chosen path (solution found)}
+
+      \item \highlightc{myyellow!60}{\textbf{expand/export chosen path:}} \\
+            \graytext{expand the chosen path and export them as new open paths}
+    \end{enumerate}
+
+  \end{proofbox}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \begin{tabular}{@{} r | c @{} }
+      \toprule
+      \highlight{\textbf{Property}}     &           \\[1mm]\hline\\[-2mm]
+      \multirow{1}{*}{Halting}          & \ding{51} \\[1mm]
+      \multirow{1}{*}{Complete}         & \ding{51} \\[1mm]
+      \multirow{1}{*}{Optimal}          & \ding{51} \\[1mm]
+      \multirow{1}{*}{Time Complexity}  & -         \\[1mm]
+      \multirow{1}{*}{Space Complexity} & -         \\[1mm]
+    \end{tabular}
+  \end{center}
+  where we define:
+  \begin{itemize}
+    \item \highlight{\textbf{time-complexity}}:\\
+          \color{gray}\footnotesize the total number of nodes exported onto the open queue \color{black}\normalsize
+    \item \highlight{\textbf{space-complexity}}:\\
+          \color{gray}\footnotesize the maximum number of nodes simultaneously on the open queue \color{black}\normalsize
+  \end{itemize}
+  \begin{center}
+    \graytext{properties of cheapest-first search}
+  \end{center}
+  \renewcommand\thefootnote{}\footnotetext{\color{gray} Assumptions:  $V =$ \texttt{Graph.vertices.size}, $E =$ \texttt{Graph.edges.size}, $|V| < \infty$, $|E| < \infty$, $\textsf{wgt}(\cdot) \geq 0$, intra-path cycle-checking is used}
+\end{frame}
+
+\iffalse
+  \begin{frame}{Path-Finding Problems (Depth-First Search)}
+  \end{frame}
+\fi
+
+\begin{frame}
+  \begin{center}
+    \Large \highlight{\textbf{depth-first search}} \\[1mm]
+    \normalsize\color{gray} (path-finding problems)
+  \end{center}
+
+\end{frame}
+
+\begin{frame}
+  \begin{proofbox}
+    \highlight{\textbf{depth-first search}}:\\
+    \graytext{(detecting loops)} \\[-4mm]
+    \begin{enumerate}
+      \item \highlightc{myyellow!60}{\textbf{explore the longest open path}} \\
+            \graytext{choose one of the longest open paths to explore; if there are none, stop and return \texttt{None} (no solution)}
+
+      \item \highlightc{myyellow!60}{\textbf{check for goal:}} \\
+            \graytext{if the chosen path is goal-terminating, stop and return the chosen path (solution found)}
+
+      \item \highlightc{myyellow!60}{\textbf{expand/export chosen path:}} \\
+            \graytext{expand the chosen path and export them as new open paths}
+    \end{enumerate}
+
+  \end{proofbox}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \begin{tabular}{@{} r | c @{} }
+      \toprule
+      \highlight{\textbf{Property}}     &           \\[1mm]\hline\\[-2mm]
+      \multirow{1}{*}{Halting}          & \ding{51} \\[1mm]
+      \multirow{1}{*}{Complete}         & \ding{51} \\[1mm]
+      \multirow{1}{*}{Optimal}          & \ding{55} \\[1mm]
+      \multirow{1}{*}{Time Complexity}  & $O(|V|)$  \\[1mm]
+      \multirow{1}{*}{Space Complexity} & $O(|V|)$  \\[1mm]
+    \end{tabular}
+  \end{center}
+  where we define:
+  \begin{itemize}
+    \item \highlight{\textbf{time-complexity}}:\\
+          \graytext{the total number of nodes exported onto the open queue}
+    \item \highlight{\textbf{space-complexity}}:\\
+          \graytext{the maximum number of nodes simultaneously on the open queue}
+  \end{itemize}
+  \begin{center}
+    \graytext{properties of depth-first search}
+  \end{center}
+  \renewcommand\thefootnote{}\footnotetext{\color{gray} Assumptions:  $V =$ \texttt{Graph.vertices.size}, $E =$ \texttt{Graph.edges.size}, $|V| < \infty$, $|E| < \infty$, intra-path cycle-checking is used}
+\end{frame}
+
+\iffalse
+  \begin{frame}{Appendix (Useful Theorems)}
+  \end{frame}
+\fi
+
+\begin{frame}
+  \begin{center}
+    \Large \highlight{\textbf{appendix}} \\[1mm]
+    \normalsize\color{gray} (useful theorems)
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{thmbox}
+    Let $\textsf{deg}(v)$ denote the degree of vertex $v$ (the number of edges originating at $v$). Then for any directed graph,
+    \[\sum_{v \in V}\textsf{deg}(v) = |E|,\]
+  \end{thmbox}
+  \begin{proofbox}
+    Each edge, $e \in E$, has an origin, $\textsf{org}(e)$ and destination, $\textsf{dst}(e)$, and thus increases the degree of each vertex by one (for a total of two).
+  \end{proofbox}
+\end{frame}
+
+
+\end{document}

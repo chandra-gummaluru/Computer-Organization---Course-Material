@@ -1,0 +1,1008 @@
+\documentclass[mathserif, handout]{beamer}
+\input{includes}
+\input{tikz_figures}
+
+% title
+\title{Spanning Tree Problems}
+\subtitle{Algorithms and Data Structures}
+\author[C. Gummaluru]{Chandra Gummaluru}
+\titlegraphic{\includegraphics[width=0.15\linewidth]{images/signature.pdf}}
+\institute[]{\url{chandra-gummaluru.github.io} }
+\date[Algorithms and Data Structures]{}
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\iffalse
+  \begin{frame}{Spanning Tree Problems}
+  \end{frame}
+\fi
+
+\begin{frame}
+  \begin{thmbox}
+    \highlight{\textbf{spanning tree problems}} \\
+    \graytext{(broadcasting)} \\[2mm]
+    \highlightc{myyellow!60}{\textbf{assumptions}}:
+    \begin{itemize}
+      \item a connected, weighted graph, $\mathcal{G} = (V,E, \textsf{wgt},\dots)$, is given
+      \item $\textsf{wgt}(e) > 0$ for all $e \in E$ $\textsf{wgt}(e)$
+    \end{itemize}
+    \\[4mm]
+    \highlightc{myyellow!60}{\textbf{goals}}:
+    \begin{itemize}
+      \item find a connected tree, $\mathcal{T} = (V,T)$ such that $T \subseteq E$
+      \item if multiple such trees exist, return the one with the least weight
+      \item if no such tree exists, return \texttt{None}
+    \end{itemize}
+  \end{thmbox}
+\end{frame}
+
+\iffalse
+  \begin{frame}{Spanning Tree Problems (Prim's Algorithm)}
+  \end{frame}
+\fi
+
+\begin{frame}
+  \begin{center}
+    \Large \highlight{\textbf{prim's algorithm}} \\[1mm]
+    \normalsize \color{gray} (spanning tree problems)
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{thmbox}
+    \highlight{\textbf{prim's algorithm}}: \\
+    \graytext{(spanning tree problems)} \\[-4mm]
+    \begin{enumerate}
+      \item \highlightc{myyellow!60}{\textbf{find cheapest child:}} \\
+            \color{gray}\footnotesize find the cheapest edge across all vertices on the tree that does not start/end at a vertex already on the tree\color{black}\normalsize
+      \item \highlightc{myyellow!60}{\textbf{add edge/vertex:}} \\
+            \color{gray}\footnotesize add that edge and the corresponding vertex to the tree\color{black}\normalsize
+    \end{enumerate}
+  \end{thmbox}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, below] {$1$} (tD);
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(prim's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[newnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, below] {$1$} (tD);
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(prim's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[newnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (server) -- node[midway, above left] {$4$} (tA);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (server) -- node[midway, below] {$8$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, below] {$1$} (tD);
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(prim's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[newnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[newnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (server) -- node[midway, below] {$8$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, below] {$1$} (tD);
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(prim's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+
+      \imgnodetikz[newnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+
+      \draw[newnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (server) -- node[midway, below] {$8$} (tB);
+
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tA) -- node[midway, left] {$11$} (tB);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tA) -- node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, below] {$1$} (tD);
+
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(prim's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[newnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[newnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[newnode] (server) edge node[midway, below] {$8$} (tB);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tA) -- node[midway, left] {$11$} (tB);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tA) -- node[midway, above] {$8$} (tC);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tB) -- node[midway, left] {$7$} (tC);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tB) -- node[midway, below] {$1$} (tD);
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(prim's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+      \draw[defaultnode] (tB) edge node[midway, below] {$1$} (tD);
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(prim's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+      \draw[defaultnode, ->] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode, ->] (server) edge node[midway, below] {$8$} (tB);
+      \draw[defaultnode, ->] (tB) edge node[midway, below] {$1$} (tD);
+      \draw[defaultnode, <-] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode, ->] (tD) edge node[midway, below left] {$2$} (computer);
+      \draw[defaultnode, ->] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode, <-] (phone) edge node[midway, right] {$4$} (computer);
+      \draw[defaultnode, ->] (tE) edge node[midway, above right] {$9$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(prim's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{thmboxtop}
+    \begin{lstlisting}[style=mypython]
+def find_mst_prim(graph: Graph, root: Vertex) -> Tree:
+    open = Queue[Edge]()
+    for edge in graph.get_vertex(root).out_edges:
+        open.push(edge, edge.wgt)
+    closed = Dict[Key]()
+    mst = Tree()
+    mst.add_vertex(root)
+    return _find_mst_prim(graph, open, closed, mst)
+\end{lstlisting}
+  \end{thmboxtop}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{thmbox}
+    \begin{lstlisting}[style=mypython]
+def _find_mst_prim(graph: Graph, open: Queue[Edge], closed: Dict[Boolean], mst: Tree) -> Tree:
+    if open.size is 0:
+        return mst
+    edge = open.pop()
+    from = edge.from
+    to = edge.to
+    if closed.get(to.key) is not True:
+        mst.append_vertex(to.key, to.obj, from.key)
+        closed.append(edge.to.key, True)
+        for new_edge in graph.get_edges_from(edge.to.key):
+            if closed_Dict[new_edge.to.key].obj is not True:
+                open.push(new_edge, new_edge.wgt)
+    return _find_mst_prim(graph, open, closed, mst)
+\end{lstlisting}
+  \end{thmbox}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \begin{tabular}{@{} r | c @{} }
+      \toprule
+      \highlight{\textbf{Property}}     &           \\[1mm]\hline\\[-2mm]
+      \multirow{1}{*}{Halting}          & \ding{51} \\[1mm]
+      \multirow{1}{*}{Complete}         & \ding{51} \\[1mm]
+      \multirow{1}{*}{Optimal}          & \ding{51} \\[1mm]
+      \multirow{1}{*}{Time Complexity}  & $O(|V|)$  \\[1mm]
+      \multirow{1}{*}{Space Complexity} & $O(|E|)$  \\[1mm]
+    \end{tabular}
+  \end{center}
+  where we define:
+  \begin{itemize}
+    \item \highlight{\textbf{time-complexity}}:\\
+          \color{gray}\footnotesize the total number of edges on the open set  \color{black}\normalsize
+    \item \highlight{\textbf{space-complexity}}:\\
+          \color{gray}\footnotesize the maximum number of edges simultaneously on the open set \color{black}\normalsize
+  \end{itemize}
+  \begin{center}
+    \footnotesize\color{gray} properties of Prim's algorithm
+  \end{center}
+  \renewcommand\thefootnote{}\footnotetext{\color{gray} Assumptions: $|V| < \infty$, $|E| < \infty$}
+\end{frame}
+
+\iffalse
+  \begin{frame}{Spanning Tree Problems (Kruskal's Algorithm)}
+  \end{frame}
+\fi
+
+\begin{frame}
+  \begin{center}
+    \Large \highlight{\textbf{kruskal's algorithm}} \\[1mm]
+    \normalsize \color{gray} (spanning tree problems)
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \vspace{-6mm}
+  \begin{proofbox}
+    \highlight{\textbf{kruskal's algorithm}}: \\
+    \graytext{(spanning tree problems)} \\[-4mm]
+    \begin{enumerate}
+      \item \highlight{\textbf{sort edges:}} \\
+            \color{gray}\footnotesize sort the \highlight{\textbf{undirected}} edges in increasing order of weight\color{black}\normalsize
+            \begin{table}[h!]
+              \centering
+              \setlength{\tabcolsep}{4mm} % horizontal padding
+              \renewcommand{\arraystretch}{1.2} % vertical spacing
+              \begin{tabular}{m{0.6cm}|m{0.6cm}|m{0.6cm}}
+                \hline
+                \textbf{org} & \textbf{dst} & \textbf{wgt} \\\hline
+                \devicenodelabelnomargin{\texttt{B}} &
+                \devicenodelabelnomargin{\texttt{D}} &
+                1 \\\hline
+              \end{tabular}
+            \end{table}
+            \vspace{-2mm}
+            \begin{center}
+              $\vdots$
+            \end{center}
+            \vspace{-1mm}
+            \begin{table}[h!]
+              \centering
+              \setlength{\tabcolsep}{4mm}
+              \renewcommand{\arraystretch}{1.2}
+              \begin{tabular}{m{0.6cm}|m{0.6cm}|m{0.6cm}}
+                \hline
+                \devicenodelabelnomargin{\texttt{E}}                                                        &
+                \scalebox{0.85}{\raisebox{-0.3\height}{\includegraphics[scale=0.045]{images/computer.png}}} &
+                14 \\\hline
+              \end{tabular}
+            \end{table}
+      \item \highlight{\textbf{find edge:}} \\
+            \color{gray}\footnotesize iterate through the edges to find the next cheapest one that does not cause a cycle\color{black}\normalsize
+      \item \highlight{\textbf{union vertices:}} \\
+            \color{gray}\footnotesize add that edge to the spanning tree\color{black}\normalsize
+    \end{enumerate}
+  \end{proofbox}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[defaultnode] (tB) edge node[midway, below] {$1$} (tD);
+
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tB) -- node[midway, below] {$1$} (tD);
+
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[thick opacity=1]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[newnode] (tB) edge node[midway, below] {$1$} (tD);
+
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[newnode] (tB) edge node[midway, below] {$1$} (tD);
+
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tC) -- node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnodelight]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[newnodelight]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[newnode] (tB) edge node[midway, below] {$1$} (tD);
+
+      \draw[newnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[newnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[newnode] (tB) edge node[midway, below] {$1$} (tD);
+
+      \draw[newnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tD) -- node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnodelight]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[newnodelight]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[newnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[newnode] (tB) edge node[midway, below] {$1$} (tD);
+
+      \draw[newnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[newnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnodelight]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[newnodelight]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[newnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[line width=0.5mm, gray, ->] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[newnode] (tB) edge node[midway, below] {$1$} (tD);
+
+      \draw[newnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[newnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (phone) -- node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[newnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[newnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[newnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+
+      \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+      \draw[defaultnode] (tA) edge node[midway, above] {$8$} (tC);
+
+      \draw[defaultnode] (tB) edge node[midway, left] {$7$} (tC);
+      \draw[newnode] (tB) edge node[midway, below] {$1$} (tD);
+
+      \draw[newnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+
+      \draw[newnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[newnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+
+      \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode] (server) edge node[midway, below] {$8$} (tB);
+      \draw[defaultnode] (tB) edge node[midway, below] {$1$} (tD);
+      \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+
+      \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+
+      %\draw[defaultnode, ->] (tE) edge node[midway, right] {$14$} (computer);
+      \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+      %\draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+      \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+      \imgnodetikz[defaultnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+      \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+      \draw[defaultnode, ->] (server) edge node[midway, above left] {$4$} (tA);
+      \draw[defaultnode, ->] (server) edge node[midway, below] {$8$} (tB);
+      \draw[defaultnode, ->] (tB) edge node[midway, below] {$1$} (tD);
+      \draw[defaultnode, <-] (tC) edge node[midway, above] {$2$} (phone);
+      \draw[defaultnode, ->] (tD) edge node[midway, below left] {$2$} (computer);
+      \draw[defaultnode, ->] (phone) edge node[midway, above] {$7$} (tE);
+      \draw[defaultnode, <-] (phone) edge node[midway, right] {$4$} (computer);
+      \draw[defaultnode, ->] (tE) edge node[midway, above right] {$9$} (router);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{(kruskal's algorithm)}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{thmbox}
+    \begin{lstlisting}[style=mypython]
+def find_mst_kruskal(graph: Graph) -> Tree:
+    mst = Tree(graph.get_vertices())
+    edges = sorted(graph.get_edges(), key=lambda e: e[2])
+    uf = UnionFind(graph.get_vertices())
+    for (v1, v2, wgt) in edges:
+        if uf.find_set(v1) != uf.find_set(v2):
+            mst.add_edge(v1, v2, wgt)
+            uf.union_sets(v1, v2)
+    return mst
+\end{lstlisting}
+  \end{thmbox}
+\end{frame}
+
+
+\begin{frame}
+  \begin{center}
+    \begin{tabular}{@{} r | c @{} }
+      \toprule
+      \highlight{\textbf{Property}}     &                   \\[1mm]\hline\\[-2mm]
+      \multirow{1}{*}{Halting}          & \ding{51}         \\[1mm]
+      \multirow{1}{*}{Complete}         & \ding{51}         \\[1mm]
+      \multirow{1}{*}{Optimal}          & \ding{51}         \\[1mm]
+      \multirow{1}{*}{Time Complexity}  & $O(|E|\log(|E|))$ \\[1mm]
+      \multirow{1}{*}{Space Complexity} & $O(|V|+|E|)$      \\[1mm]
+    \end{tabular}
+  \end{center}
+  where we define:
+  \begin{itemize}
+    \item \highlight{\textbf{time-complexity}}:\\
+          \color{gray}\footnotesize the total number of edges explored  \color{black}\normalsize
+    \item \highlight{\textbf{space-complexity}}:\\
+          \color{gray}\footnotesize the maximum number of edges simultaneously on the open set \color{black}\normalsize
+  \end{itemize}
+  \begin{center}
+    \footnotesize\color{gray} properties of Kruskal's algorithm
+  \end{center}
+  \renewcommand\thefootnote{}\footnotetext{\color{gray} Assumptions: $|V| < \infty$, $|E| < \infty$}
+\end{frame}
+
+\iffalse
+  \begin{frame}{Appendix (Proofs)}
+  \end{frame}
+\fi
+
+\begin{frame}
+  \begin{center}
+    \Large \highlight{\textbf{appendix}} \\[1mm]
+    \normalsize\color{gray} (proofs)
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  The \highlight{\textbf{cut-property}} is really useful:
+  \begin{thmbox}
+    Suppose $\mathca{G}$ is divided into two groups (a ``cut''). One side is the ``closed'' vertices ($\mathcal{C}$), and the other side is the ``open vertices'' ($V \setminus \mathcal{C}$).
+    \begin{figure}
+      \centering
+      \begin{tikzpicture}[scale=0.8, transform shape]
+
+        \labeledimgnodetikz[newnode]{\footnotesize\texttt{A}}{1.5}{2}{tA}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[newnode]{\footnotesize\texttt{B}}{3}{0}{tB}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{C}}{4}{2}{tC}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{D}}{6}{0.5}{tD}{images/radio_tower.png}{0.044};
+        \labeledimgnodetikz[defaultnode]{\footnotesize\texttt{E}}{8}{2}{tE}{images/radio_tower.png}{0.044};
+        \imgnodetikz[newnode]{empty}{0}{0.5}{server}{images/server.png}{0.052};
+        \imgnodetikz[defaultnode]{empty}{6.5}{3}{phone}{images/phone.png}{0.052};
+        \imgnodetikz[defaultnode]{empty}{7.5}{-1}{computer}{images/computer.png}{0.052};
+        \imgnodetikz[defaultnode]{empty}{9.5}{0.5}{router}{images/router.png}{0.052};
+
+        \draw[newnode] (server) edge node[midway, above left] {$4$} (tA);
+        \draw[newnode] (server) edge node[midway, below] {$8$} (tB);
+        \draw[defaultnode] (tA) edge node[midway, left] {$11$} (tB);
+        \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tA) -- node[midway, above] {$8$} (tC);
+        \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tB) -- node[midway, left] {$7$} (tC);
+        \draw[newnode, decorate, decoration={snake, amplitude=1.75pt, segment length=8pt}] (tB) -- node[midway, below] {$1$} (tD);
+        \draw[defaultnode] (tC) edge node[midway, above] {$2$} (phone);
+        \draw[defaultnode] (tC) edge node[midway, above right] {$6$} (tD);
+        \draw[defaultnode] (tD) edge node[midway, below left] {$2$} (computer);
+        \draw[defaultnode] (phone) edge node[midway, above] {$7$} (tE);
+        \draw[defaultnode] (phone) edge node[midway, right] {$4$} (computer);
+        \draw[defaultnode] (tE) edge node[midway, right] {$14$} (computer);
+        \draw[defaultnode] (tE) edge node[midway, above right] {$9$} (router);
+        \draw[defaultnode] (computer) edge node[midway, below right] {$10$} (router);
+
+        \draw[very thick, dashed] (2, 3) edge[bend left=10] (5, -1);
+      \end{tikzpicture}
+    \end{figure}
+    The cheapest edge that crosses this cut must belong to some minimum spanning tree.
+  \end{thmbox}
+\end{frame}
+
+
+\end{document}

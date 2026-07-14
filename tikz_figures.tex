@@ -1,0 +1,363 @@
+% ===========================
+% Premade TikZ Figure Commands
+% ===========================
+
+\tikzset{
+	dsnode/.style={
+			draw=black,
+			thick,
+			rectangle,
+			minimum height=10mm,
+			minimum width=15mm,
+			fill=lightgray!05
+		}
+}
+
+% images w/ labels
+% inside tikz as a node
+\NewDocumentCommand{\labeledimgnodetikz}{O{} m m m m m m}{%
+	\begin{scope}[transparency group, #1]
+		\node[
+			draw,
+			circle,
+			inner sep=0,
+			outer sep=0,
+			minimum size=10mm,
+			#1
+		] (#5) at (#3,#4)
+		{\includegraphics[scale=#7]{#6}};
+		\node[
+			rectangle,
+			draw=black,
+			thick,
+			fill=black!55,
+			rounded corners=0.1mm,
+			inner sep=0pt,
+			outer sep=0pt,
+			minimum size=2.8mm,
+			minimum width=3.5mm
+		] at (#3,#4-0.1) {};
+		\node[outer sep=0, inner sep=0, white] at (#3,#4-0.1) {\footnotesize #2};
+	\end{scope}
+}
+
+% inside tikz isolated
+
+% outside tikz
+\NewDocumentCommand{\labelednode}{m}{%
+	\begin{tikzpicture}[baseline={(0,-1mm)}]
+		\node[
+			rectangle,
+			thick,
+			draw=black,
+			fill=black!55,
+			rounded corners=0.1mm,
+			inner sep=0pt,
+			outer sep=0pt,
+			minimum size=2.8mm,
+			minimum width=3.5mm
+		] at (0,0) {};
+		\node[outer sep=0, inner sep=0, white, minimum size=2.8mm, minimum width=3.5mm] at (0,0) {\footnotesize #1};
+	\end{tikzpicture}
+}
+
+% images only
+% inside tikz as a node
+\NewDocumentCommand{\imgnodetikz}{O{} m m m m m m}{%
+	\begin{scope}[transparency group, #1]
+		\node[
+			draw,
+			circle,
+			inner sep=0,
+			outer sep=0,
+			minimum size=10mm,
+			#1
+		] (#5) at (#3,#4)
+		{\includegraphics[scale=#7]{#6}};
+		\node[
+			rectangle,
+			draw,
+			thick,
+			fill=black!55,
+			rounded corners=0.1mm,
+			inner sep=0pt,
+			outer sep=0pt,
+			minimum size=2.8mm,
+			minimum width=3.5mm,
+			opacity=0
+		] at (0,0) {};
+		\node[outer sep=0, inner sep=0, white, opacity=0] at (0,0) {\footnotesize #2};
+	\end{scope}
+}
+
+% inside tikz isolated
+\NewDocumentCommand{\imgtikz}{O{} mm}{%
+	\begin{scope}[transparency group, #1]
+		\node[
+			inner sep=0,
+			outer sep=0
+		] (#5) at (#3,#4)
+		{\includegraphics[scale=#3]{#2}};
+	\end{scope}
+}
+
+
+% outside tikz
+\NewDocumentCommand{\imgnode}{mm}{%
+	\begin{tikzpicture}[baseline={(0,-1mm)}]
+        \node[
+            inner sep=0,
+            outer sep=0,
+            draw opacity=0,
+        ] at (0,0)
+        {\includegraphics[scale=#2]{#1}};
+    \end{tikzpicture}
+}
+
+% outside tikz (inline)
+\newcommand{\imgnodetext}[2]{%
+	\hspace{-0.5mm}%
+	\raisebox{-0.26\height}{%
+		\includegraphics[scale=#2]{#1}%
+	}%
+	\hspace{-0.5mm}%
+}
+
+
+% labels only
+% inside tikz as a node
+\NewDocumentCommand{\labeltikz}{m}{%
+	\node[
+		rectangle,
+		thick,
+		draw=black,
+		fill=black!55,
+		rounded corners=0.1mm,
+		inner sep=0pt,
+		outer sep=0pt,
+		minimum size=2.8mm,
+		minimum width=3.5mm
+	] at (0,0) {};
+	\node[outer sep=0, inner sep=0, white, draw opacity=0] at (0,0) {\footnotesize #1};
+}
+
+% inside tikz isolated
+
+% outside tikz
+
+% === define custom pgfkeys ===
+\pgfkeys{
+	/devicenode/.is family, /devicenode,
+	outline thickness/.initial=thick,
+	outline color/.initial=black
+}
+
+\NewDocumentCommand{\qpacket}{m}{%
+	\begin{tikzpicture}[baseline=(current bounding box.center)]
+		\node at (0.5,0.4) {\includegraphics[scale=0.1]{#1}};
+	\end{tikzpicture}%
+}
+
+\NewDocumentCommand{\bpacketid}{mmm}{%
+	\begin{tikzpicture}[baseline=(current bounding box.center)]
+		\begin{scope}[shift={(0.85,0.7)}]
+			\draw[thick, draw=black, fill=#1, rounded corners=1pt] (0.01,0.05) rectangle node[white, text width=1cm, align=center] {\color{#3}\footnotesize #2} (-0.71,-0.625);
+		\end{scope}
+	\end{tikzpicture}%
+}
+
+\NewDocumentCommand{\bdevicelabel}{m}{%
+	\begin{tikzpicture}[baseline=(current bounding box.center)]
+		\begin{scope}[shift={(0.85,0.7)}]
+			\node[
+				rectangle,
+				draw,
+				thick,
+				fill=black!55,
+				rounded corners=0.1mm,
+				inner sep=0pt,
+				outer sep=0pt,
+				minimum size=2.8mm,
+				minimum width=3.5mm,
+				opacity=0
+			] at (0,0) {\footnotesize #2};
+		\end{scope}
+	\end{tikzpicture}%
+}
+
+\NewDocumentCommand{\packetid}{mmmm}{%
+	\begin{tikzpicture}[baseline=(current bounding box.center)]
+		\begin{scope}[shift={(0.85,0.7)}]
+			\draw[thick, draw=black, fill=#2, rounded corners=1pt] (0.01,0.05) rectangle node[white, text width=1cm, align=center] {\color{#4}\footnotesize #3} (-0.71,-0.625);
+			\node[
+				star,
+				star points=30,
+				star point ratio=0,
+				scale=1.5,
+				draw=black,
+				thick,
+				fill=white,
+				rounded corners=0.1mm,
+				inner sep=0pt,
+				minimum size=2.8mm
+			] at (0,0) {};
+			\node at (0,0) {\footnotesize #1};
+		\end{scope}
+	\end{tikzpicture}%
+}
+
+\NewDocumentCommand{\packeticon}{m O{white}}{%
+	\begin{tikzpicture}[baseline=(current bounding box.center)]
+		\node[
+			star,
+			star points=30,
+			star point ratio=0,
+			scale=1.5,
+			draw=black,
+			thick,
+			fill=#2,
+			rounded corners=0.1mm,
+			inner sep=0pt,
+			minimum size=2.8mm
+		] at (0,0) {};
+		\node at (0,0) {\footnotesize #1};
+	\end{tikzpicture}%
+}
+
+\tikzset{
+	dictnode/.pic={
+			\draw[thick, fill=#1, line join=]
+			(-0.75,-0.5) --
+			(-0.75,0.5)  --
+			(0.75,0.5) --
+			(0.75,-0.5) --
+			cycle --
+			(-0.75, 0.75) --
+			(0.75, 0.75) --
+			(0.75, -0.5) --
+			cycle;
+		}
+}
+
+\tikzset{
+	queuenode/.pic={
+			\draw[thick, fill=#1, line join=round]
+			(-0.85,-0.5) --
+			(-0.85,0.5)  --
+			(0.65,0.5) --
+			(0.75,0) --
+			(0.65,-0.5) --
+			cycle;
+		}
+}
+
+\tikzset{
+	queuenodetail/.pic={
+			\draw[thick, fill=#1, line join=round]
+			(-0.75,-0.5) --
+			(-0.75,0.5)  --
+			(0.65,0.5) --
+			(0.75,0) --
+			(0.65,-0.5) --
+			cycle;
+		}
+}
+
+\tikzset{
+	listnode/.style={
+			shape=rectangle,
+			rounded corners,
+			thick,
+			minimum height=10mm,
+			minimum width=15mm,
+			inner sep=0pt
+		}
+}
+
+\tikzset{
+	arraynode/.style={
+			shape=rectangle,
+			thick,
+			minimum height=10mm,
+			minimum width=15mm,
+			inner sep=0pt
+		}
+}
+
+\tikzset{
+	graphnode/.style={
+			shape=circle,
+			thick,
+			minimum size=5mm,
+			inner sep=0pt
+		}
+}
+
+\tikzset{
+	defaultnode/.style={
+			transform shape,
+			circle,
+			draw=black,
+			thick,
+			fill=white,
+			minimum size=10mm,
+			inner sep=0pt
+		},
+	newnode/.style={
+			transform shape,
+			defaultnode,
+			draw=myyellow,
+			fill=myyellow!60,
+			very thick
+		},
+	newnodelight/.style={
+			transform shape,
+			defaultnode,
+			draw=myyellow,
+			fill=myyellow!30,
+			very thick
+		},
+	deletenode/.style={
+			defaultnode,
+			draw=gray,
+			dashed,
+			fill=lightgray,
+			text=gray,
+			very thick
+		},
+	nooutlinenode/.style={
+			defaultnode,
+			draw=none,
+            draw opacity=0,
+			text=black,
+			very thick
+		},
+    nofillnode/.style={
+			defaultnode,
+			fill=none,
+            text=black,
+			very thick
+		}
+}
+\tikzset{
+	faded/.style={opacity=0.5, text opacity=0.5, transparency group}
+}
+\tikzset{
+	smallgraytext/.style={font=\footnotesize\color{gray}}
+}
+\tikzset{
+	graytext/.style={font=\normalsize\color{gray}}
+}
+\tikzset{
+  squigglearrow/.style={
+    very thick,
+    lightgray,
+    decorate,
+    decoration={
+      snake,
+      amplitude=1.75pt,
+      segment length=8pt
+    }
+  }
+}
+

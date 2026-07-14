@@ -1,0 +1,281 @@
+% ======================================================================
+% General LaTeX Setup for Beamer (Reusable Preamble)
+% Author: Chandra Gummaluru
+% ======================================================================
+
+\documentclass[mathserif, handout]{beamer}
+\setbeamertemplate{frametitle}{}
+
+% ------------------------------------------------------------
+% basic packages
+% ------------------------------------------------------------
+\usepackage{url}
+\usepackage{ifthen}
+\usepackage{comment}
+\usepackage{enumerate}
+\usepackage[font=small]{caption}
+\usepackage{subcaption}
+\usepackage{moresize}
+\usepackage[outline]{contour}
+\usepackage{transparent}
+\usepackage{worldflags}
+\usepackage{bm}
+\usepackage{graphbox}
+\usepackage{mathtools}
+\usepackage{multirow}
+\usepackage{fontawesome5}
+\usepackage{pifont}
+\usepackage{array}
+\usepackage{comment}
+
+% ------------------------------------------------------------
+% math
+% ------------------------------------------------------------
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% ------------------------------------------------------------
+% colors
+% ------------------------------------------------------------
+\definecolor{hl}{RGB}{248,196,69}
+\definecolor{mytransparent}{RGBA}{250,150,24,0.5}
+\definecolor{myred}{HTML}{ED5565}
+\definecolor{myorange}{HTML}{FC6E51}
+\definecolor{myyellow}{HTML}{FFCE54}
+\definecolor{mygreen}{HTML}{A0D469}
+\definecolor{myteal}{HTML}{48CFAD}
+\definecolor{mycyan}{HTML}{4FC1E9}
+\definecolor{myblue}{HTML}{5D9CEC}
+\definecolor{mypurple}{HTML}{AC92EC}
+\definecolor{mypink}{HTML}{EC87C0}
+\definecolor{green1}{HTML}{C0C490}
+\definecolor{blue1}{HTML}{CADCD7}
+\definecolor{green2}{HTML}{B7C6AB}
+\definecolor{gray1}{HTML}{B3B1A5}
+
+\newcommand{\graytext}[1]{\footnotesize\color{gray}#1\normalsize\color{black}}
+
+% ------------------------------------------------------------
+% symbols
+% ------------------------------------------------------------
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+
+% ------------------------------------------------------------
+% highlighting
+% ------------------------------------------------------------
+\newcommand{\reducedstrut}{\vrule width 0pt height .9\ht\strutbox depth .9\dp\strutbox\relax}
+\newcommand{\highlight}[1]{%
+  \begingroup\setlength{\fboxsep}{0pt}\colorbox{hl}{\reducedstrut$\displaystyle #1$\/}\endgroup}
+\newcommand{\highlightc}[2]{%
+  \begingroup\setlength{\fboxsep}{0pt}\colorbox{#1}{\reducedstrut$\displaystyle #2$\/}\endgroup}
+\def\HiLi{\leavevmode\rlap{\hbox to \hsize{\color{yellow!50}\leaders\hrule height .8\baselineskip depth .5ex\hfill}}}
+
+% ------------------------------------------------------------
+% environments (boxes)
+% ------------------------------------------------------------
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+
+\newtcolorbox{thmbox}[1][]{colback=gray!30!white!20, colframe=black, fonttitle=\bfseries, title=#1, boxrule=0.5pt}
+
+% 1) Bottom open (draw top + sides only)
+\newtcolorbox{thmboxtop}[1][]{
+    enhanced,
+    frame hidden,
+    colback=gray!30!white!20,
+    borderline north={0.5pt}{0pt}{black}, % top
+    borderline west={0.5pt}{0pt}{black},  % left
+    borderline east={0.5pt}{0pt}{black}   % right
+}
+
+% 2) Top open (draw bottom + sides only)
+\newtcolorbox{thmboxbot}[1][]{
+    enhanced,
+    frame hidden,
+    colback=gray!30!white!20,
+    borderline south={0.5pt}{0pt}{black}, % bottom
+    borderline west={0.5pt}{0pt}{black},  % left
+    borderline east={0.5pt}{0pt}{black}   % right
+}
+
+% 3) Side only (draw only left and right)
+\newtcolorbox{thmboxside}[1][]{
+    enhanced,
+    frame hidden,
+    colback=gray!30!white!20,
+    borderline west={0.5pt}{0pt}{black},  % left
+    borderline east={0.5pt}{0pt}{black}   % right
+}
+
+\newtcolorbox{defboxtop}[1][]{
+    enhanced,
+    colback=gray!30!white!20,
+    frame hidden,
+    overlay={
+        % Draw top + sides with rounded corners
+        \draw[line width=0.5pt, black, rounded corners=3mm]
+            (frame.south west) -- (frame.north west) -- (frame.north east) -- (frame.south east);
+    },
+    #1
+}
+
+\newtcolorbox{defboxbot}[1][]{
+    enhanced,
+    colback=gray!30!white!20,
+    frame hidden,
+    overlay={
+        % Draw top + sides with rounded corners
+        \draw[line width=0.5pt, black, rounded corners=3mm]
+            (frame.north west) -- (frame.south west) -- (frame.south east) -- (frame.north east);
+    },
+    #1
+}
+
+\newtcolorbox{defboxside}[1][]{
+    enhanced,
+    frame hidden,
+    colback=gray!30!white!20,
+    borderline west={0.5pt}{0pt}{black},  % left
+    borderline east={0.5pt}{0pt}{black}   % right
+}
+
+\newtcolorbox{proofbox}[1][]{colback=gray!20!white!20, colframe=grey, fonttitle=\bfseries, title=#1, boxrule=0.5pt, colbacktitle=white, enhanced jigsaw, sharp corners}
+
+% ------------------------------------------------------------
+% code listings
+% ------------------------------------------------------------
+\usepackage{listings}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
+\lstdefinestyle{mypython}{
+  language=Python,
+  deletekeywords=[2]{open, next, from, chr, str, int},
+  morekeywords=[3]{List, Graph, Tree, Dict, Set, UnionFind, Ordict, Trie, Queue},
+  morekeywords=[4]{ListNode, Vertex, Edge, Path, TreeNode, DictNode, UnifNode, OrdictNode, TrieNode, QueueNode},
+  morekeywords=[5]{True, False, Boolean, String, Integer, Key, Function, KeyedObject, Object, Array, Tuple, Optional, None},
+  keywordstyle=\color{mycyan}\bfseries,
+  keywordstyle=[3]\color{myblue}\bfseries,
+keywordstyle=[4]\color{myblue}\bfseries,
+keywordstyle=[5]\color{mycyan}\bfseries,
+  stringstyle=\color{orange},
+  commentstyle=\color{gray}\itshape,
+  basicstyle=\ttfamily\footnotesize,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=5pt,
+  xleftmargin=15pt,
+  frame=none,
+  showstringspaces=false,
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=4,
+  columns=flexible
+}
+
+
+% ------------------------------------------------------------
+% algorithms
+% ------------------------------------------------------------
+\usepackage{algorithm}
+\usepackage[endLComment=~]{algpseudocodex}
+\makeatletter
+\algrenewcommand\ALG@beginalgorithmic{\footnotesize}
+\makeatother
+
+% ------------------------------------------------------------
+% optimization environments
+% ------------------------------------------------------------
+\usepackage[nocomma]{optidef}
+
+% ------------------------------------------------------------
+% pgfplots and pie charts
+% ------------------------------------------------------------
+\usepackage{pgfplots}
+\usepackage{pgf-pie}
+\pgfplotsset{compat=1.7}
+
+% ------------------------------------------------------------
+% tikz
+% ------------------------------------------------------------
+\usepackage{tikz}
+\usetikzlibrary{
+  angles, quotes, positioning, fit, backgrounds, shapes.geometric, intersections,
+  calc, shapes, mindmap, decorations.text, arrows, arrows.meta,
+  automata, chains, decorations.pathreplacing, calligraphy, backgrounds,
+  decorations.markings, shapes.misc, decorations.pathmorphing
+}
+\tikzset{
+  invisible/.style={opacity=0},
+  visible on/.style={alt=#1{}{invisible}},
+  alt/.code args={<#1>#2#3}{\alt<#1>{\pgfprioritysalso{#2}}{\pgfprioritysalso{#3}}},
+  right triangle/.style={
+    draw, thick, fill=myyellow,
+    shape border rotate=0,
+    shape=isosceles triangle,
+    isosceles triangle apex angle=90,
+    minimum size=1mm, inner sep=0pt, anchor=center
+  },
+  set arrow inside/.code={\pgfqkeys{/tikz/arrow inside}{#1}},
+  set arrow inside={end/.initial=>, opt/.initial=},
+  /pgf/decoration/Mark/.style={
+    mark/.expanded=at position #1 with
+    {\noexpand\arrow[\pgfkeysvalueof{/tikz/arrow inside/opt}]
+     {\pgfkeysvalueof{/tikz/arrow inside/end}}}
+  },
+  arrow inside/.style 2 args={
+    set arrow inside={#1},
+    postaction={decorate, decoration={markings, Mark/.list={#2}}}
+  }
+}
+
+\newcommand{\multiedge}[5][]{
+\pgfmathsetmacro{\N}{#4}
+\pgfmathsetmacro{\mid}{(\N-1)/2}
+\foreach \i in {0,...,\numexpr#4-1\relax} {
+
+\pgfmathsetmacro{\k}{\i-\mid}
+\draw[#1] ($ (#2) + \k*#5*($(#2)!1!90:(#3)$) $) -- ($ (#3) + \k*#5*($(#2)!1!90:(#3)$) $); 
+
+}
+\draw[#1,  -{>[scale=1]}]
+  ($(#2)!0.54!(#3)$) -- ($(#2)!0.55!(#3)$);
+}
+
+% ------------------------------------------------------------
+% bibliography
+% ------------------------------------------------------------
+\usepackage[style=ieee]{biblatex}
+\setbeamertemplate{bibliography item}{\insertbiblabel}
+\setbeamertemplate{background canvas}{
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[opacity=0.0075]
+      at (current page.center)
+      {\includegraphics[width=0.8\paperwidth]{images/signature.pdf}};
+  \end{tikzpicture}
+}
+
+% ------------------------------------------------------------
+% beamer theme and settings
+% ------------------------------------------------------------
+\usetheme{Boadilla}
+\usecolortheme{seagull}
+\beamertemplatenavigationsymbolsempty
+\setbeamertemplate{enumerate item}{(\arabic{enumi})}
+\setbeamertemplate{enumerate subitem}{(\alph{enumii})}
+\setbeamertemplate{enumerate subsubitem}{(\roman{enumiii})}
+\setbeamertemplate{itemize item}[circle]
+\setbeamertemplate{itemize subitem}{\circ}
+\setbeamertemplate{itemize subsubitem}{-}
+\setbeamercolor{item}{fg=black!40}
+\setbeamercovered{transparent=10}
+
+% ------------------------------------------------------------
+% pgfplots compatibility
+% ------------------------------------------------------------
+\pgfplotsset{compat=1.7}
