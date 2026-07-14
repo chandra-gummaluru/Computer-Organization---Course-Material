@@ -1,0 +1,139 @@
+\documentclass[mathserif, handout]{beamer}
+
+\usepackage{url}
+\input{includes}
+\input{tikz_figures}
+
+% title
+\title{Prologue}
+\subtitle{Computer Organization}
+\author[C. Gummaluru]{Chandra Gummaluru}
+\titlegraphic{\includegraphics[width=0.15\linewidth]{images/signature.pdf}}
+\institute[]{\url{chandra-gummaluru.github.io} }
+\date[Computer Organization]{}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\begin{frame}
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{hardware}} \\[2mm]
+    \graytext{the physical parts \\ that carry out computation}
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{organization}} \\[2mm]
+    \graytext{how those parts are arranged \\ to run a program}
+  \end{minipage}
+\end{frame}
+
+\begin{frame}{Motivation}
+  \begin{center}
+    \Large \highlight{\textbf{motivation}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  A computer runs programs, yet it is built from simple electrical switches. We want to understand how one becomes the other.
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth]
+      \node (sw) at (0,0) {\includegraphics[scale=0.16]{images/bulb.png}};
+      \node[smallgraytext, below=1mm of sw] {switches};
+
+      \node (pc) at (7,0) {\includegraphics[scale=0.06]{images/computer.png}};
+      \node[smallgraytext, below=1mm of pc] {programs};
+
+      \draw[very thick, ->, gray] (1.6,0) -- node[above, smallgraytext] {many layers} (5.4,0);
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  We study these layers as a stack. Each layer hides the details of the one below it.
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[node distance=0mm]
+      \tikzset{
+        layer/.style={
+          draw=black, thick, minimum width=6cm, minimum height=8mm,
+          fill=gray!30!white!20, inner sep=0pt
+        }
+      }
+      \node[layer] (l6) at (0,0) {programs};
+      \node[layer, below=of l6] (l5) {assembly language};
+      \node[layer, below=of l5] (l4) {processor};
+      \node[layer, below=of l4] (l3) {memory and sequential logic};
+      \node[layer, below=of l3] (l2) {combinational logic};
+      \node[layer, below=of l2] (l1) {transistors};
+
+      \draw[->, very thick, gray] (3.6,-4.0) -- node[right, smallgraytext, align=left] {more\\ abstract} (3.6,0.4);
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Combinational Logic}
+  \begin{center}
+    \Large \highlight{\textbf{combinational logic}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  We begin with circuits whose output depends only on their current input. From transistors, we build up:\\[2mm]
+  \begin{itemize}
+    \item \highlight{\textbf{logic gates}}: \\
+          \graytext{the basic operations on binary values} \\[2mm]
+    \item \highlight{\textbf{circuit design}}: \\
+          \graytext{combining gates to compute any function} \\[2mm]
+    \item \highlight{\textbf{arithmetic}}: \\
+          \graytext{representing numbers and adding them in hardware}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Sequential Logic}
+  \begin{center}
+    \Large \highlight{\textbf{sequential logic}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  Next we add memory, so that output can depend on the past as well as the present:\\[2mm]
+  \begin{itemize}
+    \item \highlight{\textbf{flip-flops}}: \\
+          \graytext{circuits that store a single bit} \\[2mm]
+    \item \highlight{\textbf{registers and counters}}: \\
+          \graytext{groups of bits that hold and update values} \\[2mm]
+    \item \highlight{\textbf{state machines}}: \\
+          \graytext{circuits that move through a sequence of states}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Architecture}
+  \begin{center}
+    \Large \highlight{\textbf{architecture}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  Finally we assemble these parts into a working computer:\\[2mm]
+  \begin{itemize}
+    \item \highlight{\textbf{memory}}: \\
+          \graytext{storing many values and reading them by address} \\[2mm]
+    \item \highlight{\textbf{the processor}}: \\
+          \graytext{a datapath and control that carry out instructions} \\[2mm]
+    \item \highlight{\textbf{assembly language}}: \\
+          \graytext{the instructions a program gives the processor}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    We will build the whole stack, one layer at a time, starting from a single switch.
+  \end{center}
+\end{frame}
+
+\end{document}
