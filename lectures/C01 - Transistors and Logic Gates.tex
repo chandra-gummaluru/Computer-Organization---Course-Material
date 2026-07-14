@@ -48,43 +48,82 @@
   \maketitle
 \end{frame}
 
+
 \begin{frame}
+  A wire carries a continuous voltage, but a digital circuit reads it as only two levels. A voltage near ground is \highlight{\textbf{low}} (\ttab{0}) and a voltage near the supply is \highlight{\textbf{high}} (\ttab{1}).\\[5mm]
   \begin{minipage}{0.5\textwidth}
     \centering
-    \highlight{\textbf{transistor}} \\[2mm]
-    \graytext{a switch that is opened \\ and closed by electricity}
+    \begin{tikzpicture}[>=stealth]
+      % continuous voltage scale, cut into bands
+      \fill[myblue!25]   (0,0)   rectangle (1.3,1.5);
+      \fill[black!10]    (0,1.5) rectangle (1.3,2.4);
+      \fill[myyellow!55] (0,2.4) rectangle (1.3,3.9);
+      \draw (0,0) rectangle (1.3,3.9);
+      \draw[dashed] (0,1.5) -- (1.3,1.5);
+      \draw[dashed] (0,2.4) -- (1.3,2.4);
+      % voltage axis
+      \draw[->, thick] (-0.5,0) -- (-0.5,4.1);
+      \node[smallgraytext, rotate=90, anchor=south] at (-0.7,2) {voltage};
+      \node[smallgraytext, left] at (-0.05,0) {$0$};
+      \node[smallgraytext, left] at (-0.05,3.9) {$V_{\!DD}$};
+      % digital readings
+      \node[right] at (1.5,0.75) {reads \ttab{0}};
+      \node[right] at (1.5,3.15) {reads \ttab{1}};
+      \node[right, smallgraytext] at (1.5,1.95) {forbidden};
+    \end{tikzpicture}
   \end{minipage}%
   \begin{minipage}{0.5\textwidth}
     \centering
-    \highlight{\textbf{logic gate}} \\[2mm]
-    \graytext{a small circuit that computes \\ one operation on binary values}
+    \graytext{a threshold splits the range in two} \\[4mm]
+    \graytext{voltages in the forbidden band are undefined, so a well-built circuit never rests there}
   \end{minipage}
 \end{frame}
 
-% ------------------------------------------------------------
-% binary values
-% ------------------------------------------------------------
-\begin{frame}{Binary Values}
-  \begin{center}
-    \Large \highlight{\textbf{binary values}}
-  \end{center}
-\end{frame}
-
 \begin{frame}
-  A wire carries one of two voltage levels. We read a high voltage as \ttab{1} and a low voltage as \ttab{0}.
-  \begin{figure}
+  
+  A wire takes its value from whatever it is tied to. \\[7mm]
+  \begin{minipage}[t]{0.33\textwidth}
     \centering
-    \begin{tikzpicture}[>=stealth]
-      \draw[very thick] (0,0) -- (2.5,0);
-      \node[smallgraytext, below=1mm] at (1.25,0) {low voltage};
-      \node[above=1mm] at (1.25,0) {\ttab{0}};
-
-      \draw[very thick] (5,0.6) -- (7.5,0.6);
-      \node[smallgraytext, below=1mm] at (6.25,0.6) {high voltage};
-      \node[above=1mm] at (6.25,0.6) {\ttab{1}};
-    \end{tikzpicture}
-  \end{figure}
-  Every value a computer stores or computes is built from wires like these.
+    \begin{tikzpicture}[line width=0.9pt, baseline=(current bounding box.north)]
+      \useasboundingbox (-0.7,1.2) rectangle (0.7,-1.1);
+      % power rail
+      \draw[very thick] (-0.4,0.9) -- (0.4,0.9);
+      \node[smallgraytext, above=0mm] at (0,0.95) {power};
+      \draw (0,0.9) -- (0,-0.7);
+      \fill (0,-0.7) circle (1.4pt);
+      \node[right=1.5mm] at (0,-0.7) {\ttab{1}};
+    \end{tikzpicture} \\[6mm]
+    \graytext{connected to power}
+  \end{minipage}%
+  \begin{minipage}[t]{0.33\textwidth}
+    \centering
+    \begin{tikzpicture}[line width=0.9pt, baseline=(current bounding box.north)]
+      \useasboundingbox (-0.7,1.2) rectangle (0.7,-1.1);
+      \draw (0,0.9) -- (0,-0.55);
+      \fill (0,0.9) circle (1.4pt);
+      \node[right=1.5mm] at (0,0.9) {\ttab{0}};
+      % ground symbol
+      \draw (-0.3,-0.55) -- (0.3,-0.55);
+      \draw (-0.2,-0.7) -- (0.2,-0.7);
+      \draw (-0.1,-0.85) -- (0.1,-0.85);
+      \node[smallgraytext, below=0mm] at (0,-0.95) {ground};
+    \end{tikzpicture} \\[6mm]
+    \graytext{connected to ground}
+  \end{minipage}%
+  \begin{minipage}[t]{0.33\textwidth}
+    \centering
+    \begin{tikzpicture}[line width=0.9pt, baseline=(current bounding box.north)]
+      \useasboundingbox (-0.7,1.2) rectangle (0.7,-1.1);
+      % open (unconnected) end
+      \draw (0,0.75) circle (0.07);
+      \draw (0,0.68) -- (0,-0.7);
+      \fill (0,-0.7) circle (1.4pt);
+      \node[right=1.5mm] at (0,-0.7) {\ttab{Z}};
+    \end{tikzpicture} \\[6mm]
+    \graytext{connected to nothing}
+  \end{minipage}
+\\[7mm]
+  A wire that is left untied  does not carry a 0.
 \end{frame}
 
 % ------------------------------------------------------------
@@ -93,6 +132,76 @@
 \begin{frame}{The Transistor}
   \begin{center}
     \Large \highlight{\textbf{the transistor}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  Think of a simple circuit: a power source drives a light bulb through a switch. Current flows only when the switch closes the loop.\\[3mm]
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{open}} \\[4mm]
+    \begin{tikzpicture}[line width=0.9pt]
+      \useasboundingbox (-1.2,-0.3) rectangle (3.8,2.75);
+      % loop wires
+      \draw (0,0) -- (3,0);        % bottom
+      \draw (0,0) -- (0,1.35);     % lower left
+      \draw (0,1.55) -- (0,2.2);   % upper left
+      % battery (power source)
+      \draw (-0.22,1.55) -- (0.22,1.55);
+      \draw[line width=1.7pt] (-0.11,1.35) -- (0.11,1.35);
+      \node[smallgraytext, left=1mm, align=right] at (-0.2,1.45) {power\\source};
+      % top wire and switch
+      \draw (0,2.2) -- (1.1,2.2);
+      \fill (1.1,2.2) circle (1.3pt);
+      \fill (1.9,2.2) circle (1.3pt);
+      \draw (1.1,2.2) -- (1.78,2.62);   % lever up (open)
+      \draw (1.9,2.2) -- (3,2.2);
+      % right wire to bulb
+      \draw (3,2.2) -- (3,1.48);
+      \draw (3,0.72) -- (3,0);
+      % bulb (off)
+      \draw (3,1.1) circle (0.38);
+      \draw (2.73,0.83) -- (3.27,1.37);
+      \draw (2.73,1.37) -- (3.27,0.83);
+    \end{tikzpicture} \\[4mm]
+    \graytext{the switch breaks the loop, \\ so the bulb stays off}
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{closed}} \\[4mm]
+    \begin{tikzpicture}[line width=0.9pt]
+      \useasboundingbox (-1.2,-0.3) rectangle (3.8,2.75);
+      % loop wires
+      \draw (0,0) -- (3,0);
+      \draw (0,0) -- (0,1.35);
+      \draw (0,1.55) -- (0,2.2);
+      % battery (power source)
+      \draw (-0.22,1.55) -- (0.22,1.55);
+      \draw[line width=1.7pt] (-0.11,1.35) -- (0.11,1.35);
+      \node[smallgraytext, left=1mm, align=right] at (-0.2,1.45) {power\\source};
+      % top wire and switch
+      \draw (0,2.2) -- (1.1,2.2);
+      \fill (1.1,2.2) circle (1.3pt);
+      \fill (1.9,2.2) circle (1.3pt);
+      \draw (1.1,2.2) -- (1.9,2.2);     % lever down (closed)
+      \draw (1.9,2.2) -- (3,2.2);
+      % right wire to bulb
+      \draw (3,2.2) -- (3,1.48);
+      \draw (3,0.72) -- (3,0);
+      % bulb (on)
+      \fill[myyellow!55] (3,1.1) circle (0.38);
+      \draw (3,1.1) circle (0.38);
+      \draw (2.73,0.83) -- (3.27,1.37);
+      \draw (2.73,1.37) -- (3.27,0.83);
+      \foreach \a in {0,45,135,180,225,315} {
+        \draw[myyellow!80!black] ($(3,1.1)+(\a:0.5)$) -- ($(3,1.1)+(\a:0.72)$);
+      }
+    \end{tikzpicture} \\[4mm]
+    \graytext{the switch completes the loop, \\ so the bulb turns on}
+  \end{minipage}
+  \\[4mm]
+  \begin{center}
+    \graytext{a hand-flipped switch works for a lamp, but a computer needs a switch that another wire can open and close}
   \end{center}
 \end{frame}
 
@@ -136,6 +245,66 @@
     \end{tikzpicture} \\[3mm]
     \graytext{conducts when the gate \\ is \ttab{0}} \\[1mm]
     \graytext{(marked by the small circle)}
+  \end{minipage}
+\end{frame}
+
+\begin{frame}
+  Now the switch is a transistor, sitting where the hand switch was. The gate input \ttab{g} opens and closes it, so a voltage on one wire controls the current in another.\\[3mm]
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{g = 0}} \\[6mm]
+    \begin{tikzpicture}[line width=0.9pt]
+      \useasboundingbox (-0.4,-0.6) rectangle (3.9,3.5);
+      % loop wires
+      \draw (0,0) -- (0,2.4);              % left
+      \draw (0,2.4) -- (0.9,2.4);          % top-left to drain
+      \draw (2.1,2.4) -- (3,2.4);          % source to top-right
+      \draw (0,0) -- (1.3,0);              % bottom-left to battery
+      \draw (1.6,0) -- (3,0);              % battery to bottom-right
+      % nMOS in the top wire, gate pointing up
+      \pic[rotate=-90] at (1.5,2.4) {nmos};
+      \draw (1.5,3.0) -- (1.5,3.3) node[above] {\ttab{g}};
+      % battery (power source)
+      \draw (1.3,-0.22) -- (1.3,0.22);
+      \draw[line width=1.7pt] (1.6,-0.12) -- (1.6,0.12);
+      \node[smallgraytext, below=1mm] at (1.45,-0.22) {power source};
+      % right wire to bulb
+      \draw (3,2.4) -- (3,1.48);
+      \draw (3,0.72) -- (3,0);
+      % bulb (off)
+      \draw (3,1.1) circle (0.38);
+      \draw (2.73,0.83) -- (3.27,1.37);
+      \draw (2.73,1.37) -- (3.27,0.83);
+    \end{tikzpicture} \\[4mm]
+    \graytext{the gate is low, the nMOS \\ does not conduct, bulb off}
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{g = 1}} \\[6mm]
+    \begin{tikzpicture}[line width=0.9pt]
+      \useasboundingbox (-0.4,-0.6) rectangle (3.9,3.5);
+      \draw (0,0) -- (0,2.4);
+      \draw (0,2.4) -- (0.9,2.4);
+      \draw (2.1,2.4) -- (3,2.4);
+      \draw (0,0) -- (1.3,0);
+      \draw (1.6,0) -- (3,0);
+      \pic[rotate=-90] at (1.5,2.4) {nmos};
+      \draw (1.5,3.0) -- (1.5,3.3) node[above] {\ttab{g}};
+      \draw (1.3,-0.22) -- (1.3,0.22);
+      \draw[line width=1.7pt] (1.6,-0.12) -- (1.6,0.12);
+      \node[smallgraytext, below=1mm] at (1.45,-0.22) {power source};
+      \draw (3,2.4) -- (3,1.48);
+      \draw (3,0.72) -- (3,0);
+      % bulb (on)
+      \fill[myyellow!55] (3,1.1) circle (0.38);
+      \draw (3,1.1) circle (0.38);
+      \draw (2.73,0.83) -- (3.27,1.37);
+      \draw (2.73,1.37) -- (3.27,0.83);
+      \foreach \a in {0,45,135,180,225,315} {
+        \draw[myyellow!80!black] ($(3,1.1)+(\a:0.5)$) -- ($(3,1.1)+(\a:0.72)$);
+      }
+    \end{tikzpicture} \\[4mm]
+    \graytext{the gate is high, the nMOS \\ conducts, bulb on}
   \end{minipage}
 \end{frame}
 
