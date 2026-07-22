@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script id="widget-schema" type="application/json">
+{
+  "label": "Water Analogy — V, I, R",
+  "category": "Engineering",
+  "fields": [
+    { "key": "vsource", "label": "Start supply voltage (V)", "type": "number",
+      "default": 1, "min": 0, "max": 1, "step": 0.05 },
+    { "key": "pump", "label": "Pump rate", "type": "number",
+      "default": 0.75, "min": 0, "max": 1, "step": 0.05 }
+  ]
+}
+</script>
+<meta charset="utf-8"/>
+<title>Water Analogy — Beamer+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>
+:root {
+  --high: #f59e0b;
+  --mono: 'JetBrains Mono','Fira Code',ui-monospace,monospace;
+  --ui:   'DM Sans',system-ui,-apple-system,sans-serif;
+}
+*,*::before,*::after { box-sizing:border-box; }
+html,body { height:100%; margin:0; }
+body { font-family:var(--font-ui,var(--ui)); color:var(--text,#1a1a18);
+       background:var(--bg,#fff); overflow:hidden; font-size:13px; }
+.app { height:100%; display:flex; flex-direction:column; }
+
+.tb { flex-shrink:0; display:flex; align-items:center; gap:12px; padding:7px 14px; flex-wrap:wrap;
+      border-bottom:1px solid var(--border,#e9e9e6); }
+.tb .title { font-size:12.5px; font-weight:600; letter-spacing:-.01em; }
+.tb .hint  { font-size:11px; color:var(--text-3,#aeaea5); }
+.spacer { margin-left:auto; }
+.btn { font-family:inherit; font-size:11.5px; font-weight:500; height:26px; padding:0 11px;
+       border-radius:var(--radius,6px); border:1px solid var(--border-med,#d4d4cf);
+       background:var(--bg,#fff); color:var(--text,#1a1a18); cursor:pointer; }
+.btn:hover { background:var(--bg-subtle,#f9f9f8); }
+
+.stage { flex:1; position:relative; min-height:0; }
+#c { display:block; width:100%; height:100%; touch-action:none; }
+
+.banner { position:absolute; left:50%; bottom:10px; transform:translateX(-50%);
+          background:rgba(255,255,255,.92); border:1px solid var(--border,#e9e9e6);
+          border-radius:999px; padding:6px 16px; font-size:12px; color:var(--text-2,#6b6b65);
+          box-shadow:0 8px 24px -10px rgba(0,0,0,.35); white-space:nowrap; pointer-events:none;
+          backdrop-filter:blur(4px); }
+.banner b { color:var(--text,#1a1a18); }
+@media (prefers-color-scheme: dark){ .banner{ background:rgba(30,30,28,.9);} }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tb">
+    <span class="title">Voltage · Current · Resistance</span>
+    <span class="hint">— click the valve, drag the supply level, drag the pump dial, hover a label for its electrical name</span>
+    <span class="spacer"></span>
+    <button class="btn" id="reset">Reset</button>
+  </div>
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <div class="banner" id="banner">Click the valve to let the water flow&hellip;</div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ═══ World geometry ═════════════════════════════════════════════════════════
+const W=760, H=470;
+const VMAX=1, TH=0.5;
+const TANK={ w:140, h:270, top:26 };
+const LT={x:150}, RT={x:470};
+const FLOOR=290, USABLE=210;             // v=0 at y=290, v=1 at y=80
+const PIPE_BORE=22, PIPE_CASE=32;
+const PXL=LT.x+TANK.w, PXR=RT.x;         // supply-right wall, drain-left wall
+const DR_R=RT.x+TANK.w;                  // drain-right wall x
+const PU_Y=250;                          // direct pipe (supply → drain)
+const RET_TOP=266, RET_BOT=402, RET_L=92, RET_R=666;
+const VALVE={x:346,y:PU_Y};
+const WHEEL={x:420,y:PU_Y-16,R:26};
+const VWHEEL_CY=PU_Y-PIPE_CASE/2-40;
+const PUMP={x:(RET_L+RET_R)/2, y:RET_BOT};
+const PSL={ x:PUMP.x-66, y:356, w:132 };  // pump-rate slider
+
+const DIRECT=[[PXL-12,PU_Y],[PXR+12,PU_Y]];
+const RETURN=[[DR_R-12,RET_TOP],[RET_R,RET_TOP],[RET_R,RET_BOT],[RET_L,RET_BOT],[RET_L,RET_TOP],[LT.x+12,RET_TOP]];
+
+const vToY=v=>FLOOR-(v/VMAX)*USABLE;
+const yToV=y=>Math.max(0,Math.min(VMAX,(FLOOR-y)/USABLE*VMAX));
+
+// ═══ State ══════════════════════════════════════════════════════════════════
+const S={ vSource:1, vLeft:1, vRight:0, valve:1, pump:0.75, wheel:0 };
+let current=0, pumpFlow=0, t=0, wheelAngle=0, pumpAngle=0, phU=0, phR=0, valveVis=1;
+
+// ═══ Canvas / DPR ═══════════════════════════════════════════════════════════
+const cvs=document.getElementById('c'), ctx=cvs.getContext('2d');
+let scale=1, offx=0, offy=0, dpr=1;
+function fit(){ dpr=Math.min(window.devicePixelRatio||1,2);
+  const r=cvs.getBoundingClientRect();
+  cvs.width=Math.max(1,Math.round(r.width*dpr)); cvs.height=Math.max(1,Math.round(r.height*dpr));
+  scale=Math.min(r.width/W,r.height/H); offx=(r.width-W*scale)/2; offy=(r.height-H*scale)/2; }
+new ResizeObserver(fit).observe(cvs); window.addEventListener('resize',fit); fit();
+
+// ═══ Particles ══════════════════════════════════════════════════════════════
+function mkBubbles(n,tankX){ const a=[]; for(let i=0;i<n;i++) a.push({
+  x:tankX+12+Math.random()*(TANK.w-24), y:FLOOR-Math.random()*40,
+  r:0.6+Math.random()*1.7, sp:8+Math.random()*20, w:Math.random()*6.28 }); return a; }
+const bubL=mkBubbles(14,LT.x), bubR=mkBubbles(14,RT.x);
+const drops=[];
+const INK='rgba(26,26,24,';
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function amberCol(){ return css('--high')||'#f59e0b'; }
+
+// ═══ Physics ════════════════════════════════════════════════════════════════
+const KFLOW=0.6;
+function step(dt){
+  const G=S.valve*S.valve;
+  const Qv=G*(S.vLeft-S.vRight); current=Qv;
+  let a=Qv*dt*KFLOW;
+  if(a>=0) a=Math.min(a,S.vLeft,VMAX-S.vRight); else a=Math.max(a,-S.vRight,-(VMAX-S.vLeft));
+  S.vLeft-=a; S.vRight+=a;
+  let p=S.pump*dt*KFLOW*(S.vRight>0.004?1:0);
+  p=Math.max(0,Math.min(p,S.vRight,VMAX-S.vLeft));
+  S.vRight-=p; S.vLeft+=p; pumpFlow=dt>0?p/dt:0;
+  S.vLeft=Math.max(0,Math.min(VMAX,S.vLeft)); S.vRight=Math.max(0,Math.min(VMAX,S.vRight));
+
+  const diff=Math.abs(S.vLeft-S.vRight), flowing=S.valve>0.02;
+  const margin=flowing?Math.max(0,diff-TH)/(VMAX-TH):0;
+  S.wheel+=(margin-S.wheel)*Math.min(1,dt*5);
+  wheelAngle+=S.wheel*dt*11*(S.vLeft>=S.vRight?1:-1);
+  pumpAngle+=S.pump*dt*15;
+  valveVis+=(S.valve-valveVis)*Math.min(1,dt*9);
+  phU+=current*dt; phR+=pumpFlow*dt;
+
+  const agit=Math.min(1.4,Math.abs(current)*2.6);
+  const upd=(arr,tankX,v)=>{ const wl=vToY(v); arr.forEach(b=>{
+    b.y-=(b.sp*(0.4+agit))*dt; b.x+=Math.sin(t*2+b.w)*4*dt;
+    if(b.y<wl+3||v<0.05){ b.y=FLOOR-2; b.x=tankX+12+Math.random()*(TANK.w-24);} }); };
+  upd(bubL,LT.x,S.vLeft); upd(bubR,RT.x,S.vRight);
+  if(current>0.06 && S.vRight<VMAX-0.02){
+    for(let i=0;i<Math.min(3,Math.floor(agit*3));i++) drops.push({
+      x:RT.x+14+Math.random()*24, y:vToY(S.vRight)-2, vx:(Math.random()-0.5)*40,
+      vy:-(30+Math.random()*70*agit), r:0.8+Math.random()*1.7, life:1 }); }
+  for(let i=drops.length-1;i>=0;i--){ const d=drops[i];
+    d.vy+=340*dt; d.x+=d.vx*dt; d.y+=d.vy*dt; d.life-=dt*1.6;
+    if(d.life<=0||d.y>FLOOR) drops.splice(i,1); }
+}
+
+// ═══ Draw helpers ═══════════════════════════════════════════════════════════
+function roundRectPath(x,y,w,h,r){ ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function waterSurfaceY(x,v,amp,phase){ return vToY(v)
+  + Math.sin(x*0.055+phase)*amp + Math.sin(x*0.13-phase*1.7)*amp*0.4
+  + Math.sin(x*0.31+phase*2.3)*amp*0.18; }
+
+// ── stroked-tube pipe that follows a polyline path ───────────────────────────
+function tracePath(pts,r){ ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length-1;i++) ctx.arcTo(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],r);
+  const L=pts[pts.length-1]; ctx.lineTo(L[0],L[1]); }
+function drawTube(pts,{fill=1,wet=true,dashOffset=0}={}){
+  const r=14; ctx.lineCap='round'; ctx.lineJoin='round';
+  tracePath(pts,r); ctx.lineWidth=PIPE_CASE+3; ctx.strokeStyle='#5b6369'; ctx.stroke();     // rim
+  tracePath(pts,r); ctx.lineWidth=PIPE_CASE;   ctx.strokeStyle='#99a1a8'; ctx.stroke();     // body
+  tracePath(pts,r); ctx.lineWidth=PIPE_CASE*0.42; ctx.strokeStyle='rgba(240,244,247,0.9)'; ctx.stroke(); // ridge
+  tracePath(pts,r); ctx.lineWidth=PIPE_BORE+3; ctx.strokeStyle='#2b3238'; ctx.stroke();     // bore
+  if(wet && fill>0.02){
+    const bd=PIPE_BORE*fill;
+    tracePath(pts,r); ctx.lineWidth=bd;      ctx.strokeStyle='#1f9fdf'; ctx.stroke();
+    tracePath(pts,r); ctx.lineWidth=bd*0.55; ctx.strokeStyle='rgba(150,220,255,0.5)'; ctx.stroke();
+    ctx.save(); tracePath(pts,r); ctx.lineWidth=bd*0.7; ctx.strokeStyle='rgba(245,253,255,0.6)';
+    ctx.setLineDash([9,15]); ctx.lineDashOffset=dashOffset; ctx.stroke(); ctx.restore();
+  }
+}
+
+// ── glass tanks ──────────────────────────────────────────────────────────────
+function drawGlassBack(tankX){
+  ctx.save(); ctx.fillStyle='rgba(20,30,40,0.10)';
+  ctx.beginPath(); ctx.ellipse(tankX+TANK.w/2,FLOOR+18,TANK.w*0.46,9,0,0,6.28); ctx.fill(); ctx.restore();
+  ctx.save(); roundRectPath(tankX+2,TANK.top+2,TANK.w-4,TANK.h-4,12); ctx.clip();
+  const gg=ctx.createLinearGradient(tankX,0,tankX+TANK.w,0);
+  gg.addColorStop(0,'rgba(255,255,255,0.10)'); gg.addColorStop(0.5,'rgba(210,230,240,0.04)');
+  gg.addColorStop(1,'rgba(160,190,205,0.10)'); ctx.fillStyle=gg; ctx.fillRect(tankX,TANK.top,TANK.w,TANK.h); ctx.restore();
+}
+function drawWater(tankX,v,phase,agit){
+  if(v<=0.02) return;
+  const x0=tankX+3, x1=tankX+TANK.w-3;
+  ctx.save(); roundRectPath(tankX+2,TANK.top+2,TANK.w-4,TANK.h-4,12); ctx.clip();
+  const amp=1.2+agit*7, wy=vToY(v);
+  const g=ctx.createLinearGradient(0,wy-6,0,FLOOR+20);
+  g.addColorStop(0,'rgba(150,220,255,0.92)'); g.addColorStop(0.25,'rgba(80,190,246,0.94)');
+  g.addColorStop(1,'rgba(3,120,190,0.96)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(x0,FLOOR+34);
+  for(let x=x0;x<=x1;x+=4) ctx.lineTo(x,waterSurfaceY(x,v,amp,phase));
+  ctx.lineTo(x1,FLOOR+34); ctx.closePath(); ctx.fill();
+  ctx.globalCompositeOperation='screen';
+  for(let i=0;i<3;i++){ const yy=wy+26+i*46+Math.sin(t*0.6+i)*8; if(yy>FLOOR) continue;
+    ctx.fillStyle='rgba(190,240,255,0.06)'; ctx.beginPath();
+    ctx.ellipse(tankX+TANK.w/2+Math.sin(t*0.4+i)*30,yy,TANK.w*0.5,10,0,0,6.28); ctx.fill(); }
+  ctx.globalCompositeOperation='source-over';
+  ctx.lineWidth=2.2; ctx.strokeStyle='rgba(230,250,255,0.85)'; ctx.beginPath();
+  for(let x=x0;x<=x1;x+=4){ const y=waterSurfaceY(x,v,amp,phase); x===x0?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke();
+  const arr=tankX===LT.x?bubL:bubR; ctx.fillStyle='rgba(235,250,255,0.5)';
+  arr.forEach(b=>{ if(b.y>waterSurfaceY(b.x,v,amp,phase)){ ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.28); ctx.fill(); }});
+  ctx.restore();
+}
+function drawGlassFront(tankX){
+  ctx.save(); roundRectPath(tankX+2,TANK.top+2,TANK.w-4,TANK.h-4,12); ctx.clip();
+  let s=ctx.createLinearGradient(tankX,0,tankX+40,0);
+  s.addColorStop(0,'rgba(255,255,255,0.5)'); s.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=s; ctx.fillRect(tankX+6,TANK.top+6,30,TANK.h-12);
+  s=ctx.createLinearGradient(tankX+TANK.w-26,0,tankX+TANK.w,0);
+  s.addColorStop(0,'rgba(255,255,255,0)'); s.addColorStop(1,'rgba(255,255,255,0.28)');
+  ctx.fillStyle=s; ctx.fillRect(tankX+TANK.w-26,TANK.top+6,20,TANK.h-12);
+  ctx.globalCompositeOperation='screen'; ctx.fillStyle='rgba(255,255,255,0.12)';
+  ctx.save(); ctx.translate(tankX+TANK.w*0.62,TANK.top+40); ctx.rotate(-0.5); ctx.fillRect(-8,-30,16,150); ctx.restore();
+  ctx.globalCompositeOperation='source-over'; ctx.restore();
+  roundRectPath(tankX+2,TANK.top+2,TANK.w-4,TANK.h-4,12); ctx.lineWidth=5; ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.stroke();
+  roundRectPath(tankX+2,TANK.top+2,TANK.w-4,TANK.h-4,12); ctx.lineWidth=2.2; ctx.strokeStyle='rgba(120,140,150,0.85)'; ctx.stroke();
+  ctx.lineWidth=3; ctx.strokeStyle='rgba(150,170,180,0.9)';
+  ctx.beginPath(); ctx.ellipse(tankX+TANK.w/2,TANK.top+3,TANK.w/2-3,6,0,Math.PI,0); ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.ellipse(tankX+TANK.w/2,TANK.top+3,TANK.w/2-3,6,0,Math.PI,0); ctx.stroke();
+}
+
+// ── valve (transistor) — binary ──────────────────────────────────────────────
+function drawValve(hot){
+  const openA=valveVis, half=PIPE_BORE/2;
+  ctx.save();
+  ctx.fillStyle='rgba(90,98,105,1)'; roundRectPath(VALVE.x-16,PU_Y-half-22,32,PIPE_BORE+44,5); ctx.fill();
+  ctx.fillStyle='rgba(130,138,145,1)'; roundRectPath(VALVE.x-13,PU_Y-half-19,26,PIPE_BORE+38,4); ctx.fill();
+  const gTop=PU_Y-half-2, gH=(PIPE_BORE+4)*(1-openA);
+  ctx.fillStyle='rgba(196,150,60,1)'; ctx.fillRect(VALVE.x-9,gTop,18,gH);
+  ctx.fillStyle='rgba(230,195,110,0.8)'; ctx.fillRect(VALVE.x-9,gTop,5,gH); ctx.restore();
+  ctx.strokeStyle='rgba(150,158,165,1)'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(VALVE.x,PU_Y-half-20); ctx.lineTo(VALVE.x,VWHEEL_CY+8); ctx.stroke();
+  const cx=VALVE.x, cy=VWHEEL_CY, R=17, ang=openA*Math.PI*1.5;
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(ang);
+  ctx.beginPath(); ctx.arc(0,0,R,0,6.28); ctx.lineWidth=6; ctx.strokeStyle=hot?amberCol():'rgba(80,88,95,1)'; ctx.stroke();
+  ctx.lineWidth=2.5; ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.beginPath(); ctx.arc(0,0,R,0,6.28); ctx.stroke();
+  ctx.strokeStyle=hot?amberCol():'rgba(90,98,105,1)'; ctx.lineWidth=4;
+  for(let i=0;i<3;i++){ ctx.save(); ctx.rotate(i*Math.PI/1.5); ctx.beginPath(); ctx.moveTo(-R,0); ctx.lineTo(R,0); ctx.stroke(); ctx.restore(); }
+  ctx.fillStyle='rgba(60,66,72,1)'; ctx.beginPath(); ctx.arc(0,0,4.5,0,6.28); ctx.fill(); ctx.restore();
+  if(hot){ ctx.strokeStyle=amberCol(); ctx.globalAlpha=0.5; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,cy,R+7,0,6.28); ctx.stroke(); ctx.globalAlpha=1; }
+}
+
+// ── pump (battery) ───────────────────────────────────────────────────────────
+function drawPump(){
+  const x=PUMP.x, y=PUMP.y, active=S.pump>0.02;
+  ctx.fillStyle='rgba(96,104,111,1)'; ctx.beginPath(); ctx.arc(x,y,20,0,6.28); ctx.fill();
+  ctx.fillStyle='rgba(132,140,147,1)'; ctx.beginPath(); ctx.arc(x,y,16,0,6.28); ctx.fill();
+  ctx.save(); ctx.translate(x,y); ctx.rotate(pumpAngle);
+  ctx.strokeStyle=active?amberCol():'rgba(120,128,135,1)'; ctx.lineWidth=3.2; ctx.lineCap='round';
+  for(let i=0;i<5;i++){ ctx.save(); ctx.rotate(i*6.283/5);
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.quadraticCurveTo(7,3,13,-2); ctx.stroke(); ctx.restore(); }
+  ctx.restore();
+  ctx.fillStyle=active?'#d98a1a':'#5f676d'; ctx.beginPath(); ctx.arc(x,y,4,0,6.28); ctx.fill();
+}
+
+// ── pump-rate slider (on canvas, next to the pump) ───────────────────────────
+function drawPumpSlider(hot){
+  const {x,y,w}=PSL;
+  ctx.textAlign='center'; ctx.font='600 9px var(--ui)'; ctx.fillStyle=INK+'0.5)';
+  ctx.fillText('PUMP RATE', PUMP.x, y-11);
+  ctx.lineCap='round';
+  ctx.strokeStyle='rgba(0,0,0,0.14)'; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+w,y); ctx.stroke();
+  ctx.strokeStyle=amberCol(); ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+w*S.pump,y); ctx.stroke();
+  const hx=x+w*S.pump;
+  ctx.fillStyle='#fff'; ctx.strokeStyle=amberCol(); ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.arc(hx,y,hot?8:7,0,6.28); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=INK+'0.62)'; ctx.font='600 10px var(--mono)'; ctx.fillText(S.pump.toFixed(2), PUMP.x, y+18);
+  ctx.textAlign='start';
+}
+
+// ── waterwheel (bit) ─────────────────────────────────────────────────────────
+function drawWheel(){
+  const {x,y,R}=WHEEL, spinning=S.wheel>0.015, amber=amberCol();
+  ctx.strokeStyle='rgba(110,118,125,1)'; ctx.lineWidth=4; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(x-15,PU_Y-PIPE_BORE/2-1); ctx.lineTo(x,y);
+  ctx.moveTo(x+15,PU_Y-PIPE_BORE/2-1); ctx.lineTo(x,y); ctx.stroke();
+  ctx.save(); ctx.translate(x,y); ctx.rotate(wheelAngle);
+  const N=8;
+  for(let i=0;i<N;i++){ ctx.rotate(6.283/N);
+    ctx.strokeStyle=spinning?'rgba(200,150,70,0.9)':'rgba(120,128,135,0.9)'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-R); ctx.stroke();
+    ctx.fillStyle=spinning?'rgba(246,190,90,1)':'rgba(150,158,165,1)';
+    ctx.strokeStyle='rgba(70,55,25,0.45)'; ctx.lineWidth=1;
+    roundRectPath(-5.5,-R,11,R*0.4,1.5); ctx.fill(); ctx.stroke(); }
+  ctx.restore();
+  ctx.strokeStyle=spinning?'rgba(230,170,70,0.85)':'rgba(150,158,165,0.85)'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.arc(x,y,R,0,6.28); ctx.stroke();
+  ctx.fillStyle=spinning?'#d98a1a':'#6b7278'; ctx.beginPath(); ctx.arc(x,y,6,0,6.28); ctx.fill();
+  if(S.wheel>0.12){ ctx.strokeStyle=amber; ctx.globalAlpha=0.35*Math.min(1,S.wheel*1.5); ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(x,y,R+5,wheelAngle,wheelAngle+2.2); ctx.stroke(); ctx.globalAlpha=1; }
+  if(spinning){ ctx.fillStyle='rgba(240,252,255,0.7)';
+    for(let i=0;i<3;i++){ const px=x+Math.sin(t*9+i*2)*10, py=PU_Y-6-Math.abs(Math.sin(t*7+i))*6*S.wheel;
+      ctx.beginPath(); ctx.arc(px,py,1.3,0,6.28); ctx.fill(); } }
+  const bit=spinning?1:0; ctx.textAlign='center';
+  ctx.font='700 26px var(--mono)'; ctx.fillStyle=bit?amber:INK+'0.28)';
+  if(bit){ ctx.shadowColor=amber; ctx.shadowBlur=14; }
+  ctx.fillText(bit,x+R+22,y+4); ctx.shadowBlur=0;
+  ctx.font='600 8px var(--ui)'; ctx.fillStyle=INK+'0.42)'; ctx.fillText(bit?'READS 1':'READS 0',x+R+22,y+16);
+  ctx.textAlign='start';
+}
+
+// ── readouts ─────────────────────────────────────────────────────────────────
+function drawReadouts(){
+  ctx.textAlign='center';
+  const drawV=(x,v)=>{ ctx.fillStyle=INK+'0.92)'; ctx.font='600 26px var(--mono)'; ctx.fillText(v.toFixed(2)+' V',x,FLOOR+40); };
+  drawV(LT.x+TANK.w/2,S.vLeft); drawV(RT.x+TANK.w/2,S.vRight);
+  const iMag=Math.abs(current), strength=Math.min(1,iMag/1);
+  ctx.font='600 12px var(--mono)'; ctx.fillStyle=strength>0.03?amberCol():INK+'0.3)'; ctx.globalAlpha=0.45+0.55*strength;
+  ctx.fillText('I = '+iMag.toFixed(2)+' A',(VALVE.x+WHEEL.x)/2,PU_Y-PIPE_CASE/2-28); ctx.globalAlpha=1; ctx.textAlign='start';
+}
+
+// ── hover labels (water ⇄ electrical) ────────────────────────────────────────
+const LABELS=[
+  {key:'supply',water:'Supply tank',elec:'Power (V_DD)', at:()=>({x:LT.x+TANK.w/2, y:TANK.top-9})},
+  {key:'drain', water:'Drain tank', elec:'Ground (0 V)', at:()=>({x:RT.x+TANK.w/2, y:TANK.top-9})},
+  {key:'valve', water:'Valve',      elec:'Transistor',   at:()=>({x:VALVE.x,        y:VWHEEL_CY-28})},
+  {key:'wheel', water:'Waterwheel', elec:'Bit',          at:()=>({x:WHEEL.x+8,      y:WHEEL.y-WHEEL.R-12})},
+  {key:'pump',  water:'Pump',       elec:'Battery',      at:()=>({x:PUMP.x,         y:PUMP.y+30})},
+  {key:'pipe',  water:'Pipe',       elec:'Wire',         at:()=>({x:(PXL+PXR)/2,     y:PU_Y+PIPE_CASE/2+14})},
+];
+let labelBoxes=[], hoverLabel=null;
+function drawLabels(){
+  labelBoxes=[]; ctx.font='600 10px var(--ui)'; ctx.textAlign='center'; const amber=amberCol();
+  LABELS.forEach(L=>{ const p=L.at(), hov=hoverLabel===L.key, txt=hov?L.elec:L.water;
+    const w=ctx.measureText(txt).width, x0=p.x-w/2;
+    ctx.fillStyle=hov?'rgba(245,158,11,0.15)':'rgba(0,0,0,0.045)'; roundRectPath(x0-6,p.y-11,w+12,16,8); ctx.fill();
+    if(hov){ ctx.strokeStyle=amber; ctx.lineWidth=1; roundRectPath(x0-6,p.y-11,w+12,16,8); ctx.stroke(); }
+    ctx.fillStyle=hov?amber:INK+'0.55)'; ctx.fillText(txt,p.x,p.y+1);
+    labelBoxes.push({key:L.key,x:x0-6,y:p.y-11,w:w+12,h:16}); });
+  ctx.textAlign='start';
+}
+function drawSourceHandle(hot){
+  const y=vToY(S.vLeft), x=LT.x-38;
+  ctx.save(); ctx.fillStyle=hot?amberCol():'rgba(120,130,138,0.9)'; roundRectPath(x,y-9,32,18,9); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.9)'; for(let i=-1;i<2;i++) ctx.fillRect(x+16+i*5-1,y-4,2,8); ctx.restore();
+}
+
+// ═══ Banner ═════════════════════════════════════════════════════════════════
+const banner=document.getElementById('banner');
+function updateBanner(){
+  const diff=Math.abs(S.vLeft-S.vRight); let html;
+  if(S.valve<0.5) html='Transistor off (switch open) — no current flows.';
+  else if(diff>=TH) html=`ΔV = <b>${diff.toFixed(2)} V</b> ≥ 0.5 → the wheel spins: <b>logic 1</b>.`;
+  else if(S.pump<0.12) html=`Pump too slow — the supply drained. ΔV = <b>${diff.toFixed(2)} V</b> &lt; 0.5 → <b>logic 0</b>.`;
+  else html=`ΔV = <b>${diff.toFixed(2)} V</b> &lt; 0.5 → the wheel has stalled: <b>logic 0</b>.`;
+  if(banner.innerHTML!==html) banner.innerHTML=html;
+}
+
+// ═══ Frame ══════════════════════════════════════════════════════════════════
+let hoverValve=false, hoverHandle=false, hoverPump=false;
+function frameDraw(){
+  const r=cvs.getBoundingClientRect();
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,r.width,r.height);
+  ctx.setTransform(dpr*scale,0,0,dpr*scale,offx*dpr,offy*dpr);
+  const agit=Math.min(1.4,Math.abs(current)*2.6);
+  const wet=S.vLeft>0.02||S.vRight>0.02;
+  // return loop (behind tanks), then direct pipe
+  drawTube(RETURN,{fill:0.82, wet:wet, dashOffset:-phR*40});
+  drawTube(DIRECT,{fill:0.35+0.65*valveVis, wet:wet&&valveVis>0.05, dashOffset:-phU*40});
+  drawGlassBack(LT.x); drawGlassBack(RT.x);
+  drawWater(LT.x,S.vLeft,t*2.2,agit); drawWater(RT.x,S.vRight,t*2.2+1.1,agit);
+  ctx.fillStyle='rgba(210,242,255,0.85)';
+  drops.forEach(d=>{ ctx.globalAlpha=Math.max(0,d.life); ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,6.28); ctx.fill(); }); ctx.globalAlpha=1;
+  drawGlassFront(LT.x); drawGlassFront(RT.x);
+  drawPump(); drawValve(hoverValve); drawWheel();
+  drawReadouts(); drawPumpSlider(hoverPump); drawLabels(); drawSourceHandle(hoverHandle);
+  updateBanner();
+}
+let last=performance.now();
+function tick(now){ let dt=(now-last)/1000; last=now; dt=Math.min(dt,0.05); step(dt); t+=dt; frameDraw(); }
+function loop(now){ tick(now); requestAnimationFrame(loop); }
+tick(performance.now()); requestAnimationFrame(loop);
+setInterval(()=>{ if(document.hidden) tick(performance.now()); }, 120);
+try{ if(location.hash==='#dev'){ window.__tick=tick; window.__S=S; window.__L=()=>labelBoxes; } }catch(e){}
+
+// ═══ Interaction ════════════════════════════════════════════════════════════
+function toWorld(e){ const r=cvs.getBoundingClientRect();
+  return { x:(e.clientX-r.left-offx)/scale, y:(e.clientY-r.top-offy)/scale }; }
+function onValve(p){ return Math.hypot(p.x-VALVE.x,p.y-VWHEEL_CY)<25; }
+function onHandle(p){ const y=vToY(S.vLeft), x=LT.x-38; return p.x>x-6&&p.x<x+38&&p.y>y-14&&p.y<y+14; }
+function onSourceSurface(p){ return p.x>LT.x&&p.x<LT.x+TANK.w&&Math.abs(p.y-vToY(S.vLeft))<16; }
+function onPumpSlider(p){ return p.x>PSL.x-12&&p.x<PSL.x+PSL.w+12&&Math.abs(p.y-PSL.y)<13; }
+function setPump(p){ S.pump=Math.max(0,Math.min(1,(p.x-PSL.x)/PSL.w)); }
+function labelAt(p){ for(const b of labelBoxes) if(p.x>=b.x&&p.x<=b.x+b.w&&p.y>=b.y&&p.y<=b.y+b.h) return b.key; return null; }
+
+let drag=null;
+cvs.addEventListener('pointermove',e=>{ const p=toWorld(e);
+  if(drag==='level'){ S.vSource=yToV(p.y); S.vLeft=S.vSource; }
+  else if(drag==='pump'){ setPump(p); }
+  else { hoverLabel=labelAt(p); hoverValve=onValve(p); hoverPump=onPumpSlider(p); hoverHandle=onHandle(p)||onSourceSurface(p);
+    cvs.style.cursor=hoverValve?'pointer':hoverPump?'ew-resize':hoverHandle?'ns-resize':hoverLabel?'help':'default'; }
+});
+cvs.addEventListener('pointerdown',e=>{ const p=toWorld(e); cvs.setPointerCapture(e.pointerId);
+  if(onValve(p)){ S.valve=S.valve>0.5?0:1; }
+  else if(onPumpSlider(p)){ drag='pump'; setPump(p); }
+  else if(onHandle(p)||onSourceSurface(p)){ drag='level'; }
+});
+window.addEventListener('pointerup',()=>{ drag=null; });
+
+// ═══ Toolbar ════════════════════════════════════════════════════════════════
+function doReset(all){ if(all!==false){ S.vSource=1; S.valve=1; S.pump=0.75; }
+  S.vLeft=S.vSource; S.vRight=0; S.wheel=0; drops.length=0; }
+document.getElementById('reset').addEventListener('click',()=>doReset(true));
+
+// ═══ Beamer+ integration ════════════════════════════════════════════════════
+function applyConfig(cfg){ if(!cfg) return;
+  if(typeof cfg.vsource==='number') S.vSource=cfg.vsource;
+  if(typeof cfg.pump==='number') S.pump=cfg.pump;
+  doReset(false);
+}
+applyConfig(window.WIDGET_CONFIG);
+window.addEventListener('message',e=>{ const d=e.data; if(!d) return;
+  const wid=(window.WIDGET_CONFIG&&window.WIDGET_CONFIG.id)||'water-analogy';
+  if(d.type==='widget-config') applyConfig(d.config);
+  else if(d.type==='widget-get-state')
+    window.parent.postMessage({type:'widget-state',widgetId:wid,state:{
+      vSource:S.vSource,vLeft:S.vLeft,vRight:S.vRight,valve:S.valve,pump:S.pump}},'*');
+  else if(d.type==='widget-set-state'&&d.state){ const s=d.state;
+    if(typeof s.vSource==='number')S.vSource=s.vSource;
+    if(typeof s.vLeft==='number')S.vLeft=s.vLeft;
+    if(typeof s.vRight==='number')S.vRight=s.vRight;
+    if(typeof s.valve==='number')S.valve=s.valve;
+    if(typeof s.pump==='number')S.pump=s.pump;
+  }
+});
+})();
+</script>
+</body>
+</html>
