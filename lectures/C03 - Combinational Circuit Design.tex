@@ -1,13 +1,10 @@
 \documentclass[mathserif, handout]{beamer}
-
 \usepackage{url}
 \input{includes}
 \input{tikz_figures}
-
 \usetikzlibrary{shapes.gates.logic.US}
-
+\usetikzlibrary{positioning}
 \newcommand{\ttab}[1]{\texttt{#1}}
-
 % title
 \title{Combinational Circuit Design}
 \subtitle{Computer Organization}
@@ -15,38 +12,18 @@
 \titlegraphic{\includegraphics[width=0.15\linewidth]{images/signature.pdf}}
 \institute[]{\url{chandra-gummaluru.github.io} }
 \date[Computer Organization]{}
-
 \begin{document}
-
 \begin{frame}
   \maketitle
 \end{frame}
-
 \begin{frame}
   \begin{center}
-    \highlight{\textbf{combinational circuit}} \\[2mm]
+    \highlight{\textbf{Combinational Circuit}} \\[2mm]
     \graytext{a circuit whose output depends \\ only on its current input}
   \end{center}
 \end{frame}
-
 \begin{frame}
-  The design problem is the reverse of reading a truth table.\\[4mm]
-  \begin{figure}
-    \centering
-    \begin{tikzpicture}[>=stealth]
-      \node[draw, thick, minimum width=2.2cm, minimum height=1cm, fill=gray!30!white!20] (t) at (0,0) {truth table};
-      \node[draw, thick, minimum width=2.2cm, minimum height=1cm, fill=gray!30!white!20] (c) at (5,0) {circuit};
-      \draw[->, very thick, gray] (t) -- node[above, smallgraytext] {design} (c);
-    \end{tikzpicture}
-  \end{figure}
-  \vspace{2mm}
-  \begin{center}
-    \graytext{given the output we want, we build a circuit that produces it}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  We always follow the same three steps.\\[3mm]
+  To design a circuit, we always follow the same three steps.\\[3mm]
   \begin{itemize}
     \item[(1)] \highlight{\textbf{truth table}} \\
           \graytext{write the desired output for every input} \\[2mm]
@@ -55,135 +32,150 @@
     \item[(3)] \highlight{\textbf{gates}} \\
           \graytext{translate the expression into a circuit}
   \end{itemize}
-  \vspace{2mm}
-  \begin{center}
-    \graytext{most of the effort goes into step two}
-  \end{center}
 \end{frame}
-
-% ------------------------------------------------------------
-% sum of products
-% ------------------------------------------------------------
-\begin{frame}{Sum of Products}
-  \begin{center}
-    \Large \highlight{\textbf{sum of products}}
-  \end{center}
-\end{frame}
-
 \begin{frame}
-  A \highlight{\textbf{minterm}} is an AND of every input, each in true or negated form, that is \ttab{1} for exactly one row of the truth table.\\[4mm]
+\begin{itemize}
+    \item[(1)] \highlight{\textbf{truth table}} \\
+      \graytext{write the desired output for every input} \\[2mm]
+\end{itemize}
   \begin{center}
-    \graytext{for inputs \ttab{a} and \ttab{b}, the row \ttab{a}$=$\ttab{1}, \ttab{b}$=$\ttab{0} has minterm}\\[2mm]
-    \highlight{a \cdot \overline{b}}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  Reading each row as a binary number gives the minterm a name, from \highlight{m_0} up to \highlight{m_{2^n - 1}}.\\[3mm]
-  \begin{center}
-    \renewcommand{\arraystretch}{1.2}
-    \begin{tabular}{cc|cl}
-      \ttab{a} & \ttab{b} & \graytext{name} & \graytext{minterm} \\ \hline
-      \ttab{0} & \ttab{0} & $m_0$ & $\overline{a} \cdot \overline{b}$ \\
-      \ttab{0} & \ttab{1} & $m_1$ & $\overline{a} \cdot b$ \\
-      \ttab{1} & \ttab{0} & $m_2$ & $a \cdot \overline{b}$ \\
-      \ttab{1} & \ttab{1} & $m_3$ & $a \cdot b$ \\
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabular}{ccc|cl}
+      \ttab{a} & \ttab{b} & \ttab{c} & \ttab{y} \\ \hline
+      \ttab{0} & \ttab{0} & \ttab{0} & \ttab{1} \\
+      \ttab{0} & \ttab{0} & \ttab{1} & \ttab{1} \\
+      \ttab{0} & \ttab{1} & \ttab{0} & \ttab{0} \\
+      \ttab{0} & \ttab{1} & \ttab{1} & \ttab{0} \\
+      \ttab{1} & \ttab{0} & \ttab{0} & \ttab{1} \\
+      \ttab{1} & \ttab{0} & \ttab{1} & \ttab{1} \\
+      \ttab{1} & \ttab{1} & \ttab{0} & \ttab{0} \\
+      \ttab{1} & \ttab{1} & \ttab{1} & \ttab{1} \\
     \end{tabular}
   \end{center}
-  \vspace{1mm}
-  \begin{center}
-    \graytext{each minterm is \ttab{1} for exactly one row}
-  \end{center}
 \end{frame}
 
 \begin{frame}
-  To build a circuit, we OR together the minterm of every row whose output is \ttab{1}.\\[3mm]
-  \begin{minipage}{0.5\textwidth}
+    
+\begin{itemize}
+    \item[(2)] \highlight{\textbf{Boolean expression}} \\
+      \graytext{turn the table into an expression, then simplify it} \\[2mm]
+\end{itemize}
+  \begin{center}
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabular}{ccc|cl}
+      \ttab{a} & \ttab{b} & \ttab{c} & \ttab{y} \\ \hline
+      \ttab{0} & \ttab{0} & \ttab{0} & \ttab{1} \\
+      \ttab{0} & \ttab{0} & \ttab{1} & \ttab{1} \\
+      \ttab{0} & \ttab{1} & \ttab{0} & \ttab{0} \\
+      \ttab{0} & \ttab{1} & \ttab{1} & \ttab{0} \\
+      \ttab{1} & \ttab{0} & \ttab{0} & \ttab{1} \\
+      \ttab{1} & \ttab{0} & \ttab{1} & \ttab{1} \\
+      \ttab{1} & \ttab{1} & \ttab{0} & \ttab{0} \\
+      \ttab{1} & \ttab{1} & \ttab{1} & \ttab{1} \\
+    \end{tabular}
+  \end{center}
+\begin{center}\vspace{-2mm}
+\graytext{becomes}\vspace{-2mm}
+\end{center}
+\[\ttab{y} = \overline{\ttab{a}}\,\overline{\ttab{b}}\,\overline{\ttab{c}} + \overline{\ttab{a}}\,\overline{\ttab{b}}\,\ttab{c} + \ttab{a}\,\overline{\ttab{b}}\,\overline{\ttab{c}} + \ttab{a}\,\overline{\ttab{b}}\,\ttab{c} + \ttab{a}\,\ttab{b}\,\ttab{c}\]
+\end{frame}
+
+
+\begin{frame}
+To simplify the notation, we define a \highlight{\textbf{minterm}} to be the \texttt{AND} of every input (each in true or negated form), for some row of the truth table.
+\\~\\
+Reading each row as a binary number gives a name (from \highlight{m_0} to \highlight{m_{2^n - 1}}).\\[2mm]
+\begin{center}
+    \renewcommand{\arraystretch}{1.1}
+    {\small
+    \begin{tabular}{ccc|cC}
+      \ttab{a} & \ttab{b} & \ttab{c} & \graytext{name} & \graytext{minterm} \\ \hline
+      \ttab{0} & \ttab{0} & \ttab{0} & $m_0$ & $\overline{\ttab{a}}\,\overline{\ttab{b}}\,\overline{\ttab{c}}$ \\
+      \ttab{0} & \ttab{0} & \ttab{1} & $m_1$ & $\overline{\ttab{a}}\,\overline{\ttab{b}}\,\ttab{c}$ \\
+      \ttab{0} & \ttab{1} & \ttab{0} & $m_2$ & $\overline{\ttab{a}}\,\ttab{b}\,\overline{\ttab{c}}$ \\
+      \ttab{0} & \ttab{1} & \ttab{1} & $m_3$ & $\overline{\ttab{a}}\,\ttab{b}\,\ttab{c}$ \\
+      \ttab{1} & \ttab{0} & \ttab{0} & $m_4$ & $\ttab{a}\,\overline{\ttab{b}}\,\overline{\ttab{c}}$ \\
+      \ttab{1} & \ttab{0} & \ttab{1} & $m_5$ & $\ttab{a}\,\overline{\ttab{b}}\,\ttab{c}$ \\
+      \ttab{1} & \ttab{1} & \ttab{0} & $m_6$ & $\ttab{a}\,\ttab{b}\,\overline{\ttab{c}}$ \\
+      \ttab{1} & \ttab{1} & \ttab{1} & $m_7$ & $\ttab{a}\,\ttab{b}\,\ttab{c}$ \\
+    \end{tabular}}
+  \end{center}
+
+\[
+\ttab{y} = \overline{\ttab{a}}\,\overline{\ttab{b}}\,\overline{\ttab{c}} + \overline{\ttab{a}}\,\overline{\ttab{b}}\,\ttab{c} + \ttab{a}\,\overline{\ttab{b}}\,\overline{\ttab{c}} + \ttab{a}\,\overline{\ttab{b}}\,\ttab{c} + \ttab{a}\,\ttab{b}\,\ttab{c}
+\]
+\begin{center}\vspace{-2mm}
+\graytext{becomes}\vspace{-2mm}
+\end{center}
+\[
+\ttab{y} = m_0 + m_1+m_4+m_5+m_7
+\]
+\end{frame}
+
+
+\begin{frame}
+Alternatively, we can define a \highlight{\textbf{maxterm}} to be the \texttt{OR} of every input (each in true or negated form), for some row of the truth table.
+\\~\\
+Reading each row as a binary number gives a name (from \highlight{M_0} to \highlight{M_{2^n - 1}}).\\[2mm]
+\begin{center}
+    \renewcommand{\arraystretch}{1.1}
+    {\small
+    \begin{tabular}{ccc|cC}
+      \ttab{a} & \ttab{b} & \ttab{c} & \graytext{name} & \graytext{maxterm} \\ \hline
+      \ttab{0} & \ttab{0} & \ttab{0} & $M_0$ & $\overline{\ttab{a}}+\overline{\ttab{b}}+\overline{\ttab{c}}$ \\
+      \ttab{0} & \ttab{0} & \ttab{1} & $M_1$ & $\overline{\ttab{a}}+\overline{\ttab{b}}+\ttab{c}$ \\
+      \ttab{0} & \ttab{1} & \ttab{0} & $M_2$ & $\overline{\ttab{a}}+\ttab{b}+\overline{\ttab{c}}$ \\
+      \ttab{0} & \ttab{1} & \ttab{1} & $M_3$ & $\overline{\ttab{a}}+\ttab{b}+\ttab{c}$ \\
+      \ttab{1} & \ttab{0} & \ttab{0} & $M_4$ & $\ttab{a}+\overline{\ttab{b}}+\overline{\ttab{c}}$ \\
+      \ttab{1} & \ttab{0} & \ttab{1} & $M_5$ & $\ttab{a}+\overline{\ttab{b}}+\ttab{c}$ \\
+      \ttab{1} & \ttab{1} & \ttab{0} & $M_6$ & $\ttab{a}+\ttab{b}+\overline{\ttab{c}}$ \\
+      \ttab{1} & \ttab{1} & \ttab{1} & $M_7$ & $\ttab{a}+\ttab{b}+\ttab{c}$ \\
+    \end{tabular}}
+  \end{center}
+\[
+\ttab{y} = \overline{\ttab{a}}\,\overline{\ttab{b}}\,\overline{\ttab{c}} + \overline{\ttab{a}}\,\overline{\ttab{b}}\,\ttab{c} + \ttab{a}\,\overline{\ttab{b}}\,\overline{\ttab{c}} + \ttab{a}\,\overline{\ttab{b}}\,\ttab{c} + \ttab{a}\,\ttab{b}\,\ttab{c}
+\]
+\begin{center}\vspace{-2mm}
+\graytext{becomes}
+\end{center}\vspace{-2mm}
+\[
+\ttab{y} = M_2M_3M_6
+\]
+\end{frame}
+
+\begin{frame}
+\begin{itemize}
+    \item[(3)] \highlight{\textbf{gates}} \\
+          \graytext{translate the expression into a circuit}
+\end{itemize}
+\begin{figure}
     \centering
-    \renewcommand{\arraystretch}{1.2}
-    \begin{tabular}{cc|c}
-      \ttab{a} & \ttab{b} & \ttab{y} \\ \hline
-      \ttab{0} & \ttab{0} & \ttab{0} \\
-      \ttab{0} & \ttab{1} & \ttab{1} \\
-      \ttab{1} & \ttab{0} & \ttab{1} \\
-      \ttab{1} & \ttab{1} & \ttab{0} \\
-    \end{tabular}
-  \end{minipage}%
-  \begin{minipage}{0.5\textwidth}
-    \centering
-    \graytext{two rows give \ttab{1}} \\[3mm]
-    $y = \overline{a} \cdot b + a \cdot \overline{b}$
-  \end{minipage}
+\begin{tikzpicture}[scale=0.6, transform shape]
+  \node[and gate US, draw, thick, logic gate inputs=nnn] (g0) at (0,2.40012) {};
+  \node[and gate US, draw, thick, logic gate inputs=nnn] (g1) at (0,1.20005) {};
+  \node[and gate US, draw, thick, logic gate inputs=nnn] (g4) at (0,0) {};
+  \node[and gate US, draw, thick, logic gate inputs=nnn] (g5) at (0,-1.20005) {};
+  \node[and gate US, draw, thick, logic gate inputs=nnn] (g7) at (0,-2.40012) {};
+  \node[left=1mm of g0, smallgraytext] {$\overline{\ttab{a}}\,\overline{\ttab{b}}\,\overline{\ttab{c}}$};
+  \node[left=1mm of g1, smallgraytext] {$\overline{\ttab{a}}\,\overline{\ttab{b}}\,\ttab{c}$};
+  \node[left=1mm of g4, smallgraytext] {$\ttab{a}\,\overline{\ttab{b}}\,\overline{\ttab{c}}$};
+  \node[left=1mm of g5, smallgraytext] {$\ttab{a}\,\overline{\ttab{b}}\,\ttab{c}$};
+  \node[left=1mm of g7, smallgraytext] {$\ttab{a}\,\ttab{b}\,\ttab{c}$};
+  \node[or gate US, draw, thick, logic gate inputs=nnnnn, minimum height=7.2cm] (o) at (5,0) {};
+  \draw[thick] (g0.output) -| (o.input 1);
+  \draw[thick] (g1.output) -| (o.input 2);
+  \draw[thick] (g4.output) -| (o.input 3);
+  \draw[thick] (g5.output) -| (o.input 4);
+  \draw[thick] (g7.output) -| (o.input 5);
+  \draw[thick] (o.output) -- ++(0.6,0) node[right, smallgraytext] {\ttab{y}};
+\end{tikzpicture}
+\end{figure}
 \end{frame}
 
 \begin{frame}
-  This expression maps directly to gates. Each product is an AND, and the sum is a single OR.\\[4mm]
-  \begin{figure}
-    \centering
-    \begin{tikzpicture}
-      \node[and gate US, draw, thick, scale=1.4] (g1) at (0,1.2) {};
-      \node[and gate US, draw, thick, scale=1.4] (g2) at (0,-1.2) {};
-      \node[or gate US, draw, thick, scale=1.4] (o) at (3,0) {};
-
-      \draw[thick] (g1.input 1) -- ++(-0.6,0) node[left, smallgraytext] {$\overline{a}$};
-      \draw[thick] (g1.input 2) -- ++(-0.6,0) node[left, smallgraytext] {\ttab{b}};
-      \draw[thick] (g2.input 1) -- ++(-0.6,0) node[left, smallgraytext] {\ttab{a}};
-      \draw[thick] (g2.input 2) -- ++(-0.6,0) node[left, smallgraytext] {$\overline{b}$};
-
-      \draw[thick] (g1.output) -| (o.input 1);
-      \draw[thick] (g2.output) -| (o.input 2);
-      \draw[thick] (o.output) -- ++(0.6,0) node[right, smallgraytext] {\ttab{y}};
-    \end{tikzpicture}
-  \end{figure}
-  \begin{center}
-    \graytext{summing the minterms is called the sum-of-products form}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  There is a mirror-image form. A \highlight{\textbf{maxterm}} is an OR of every input that is \ttab{0} for exactly one row. Multiplying the maxterms of the \ttab{0} rows gives the product-of-sums form.\\[4mm]
-  \begin{center}
-    \renewcommand{\arraystretch}{1.4}
-    \begin{tabular}{r@{\hspace{6mm}}l}
-      \graytext{sum of products} & $y = \overline{a} \cdot b + a \cdot \overline{b}$ \\
-      \graytext{product of sums} & $y = (a + b)\cdot(\overline{a} + \overline{b})$ \\
-    \end{tabular}
-  \end{center}
-  \vspace{2mm}
-  \begin{center}
-    \graytext{both describe the same function, so we pick whichever is smaller}
-  \end{center}
-\end{frame}
-
-% ------------------------------------------------------------
-% minimization
-% ------------------------------------------------------------
-\begin{frame}{Minimization}
-  \begin{center}
-    \Large \highlight{\textbf{minimization}}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  A sum of products works, but it is rarely the smallest circuit. Fewer terms means fewer gates, less space, and less delay.\\[3mm]
-  \begin{center}
-    \graytext{we want a systematic way to find a small expression}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  We measure the cost of a circuit by counting its gates. A smaller expression uses fewer of them.\\[4mm]
-  \begin{center}
-    \renewcommand{\arraystretch}{1.4}
-    \begin{tabular}{r@{\hspace{6mm}}ll}
-      $\overline{a} \cdot b + a \cdot \overline{b}$ & \graytext{two ANDs, one OR, two NOTs} & \graytext{five gates} \\
-      $a \oplus b$                                  & \graytext{one XOR}                    & \graytext{one gate} \\
-    \end{tabular}
-  \end{center}
-  \vspace{2mm}
-  \begin{center}
-    \graytext{the same function, at very different cost}
-  \end{center}
+  This approach works, but it is rarely the smallest circuit. Fewer terms means fewer gates, less space, and less delay.\\[3mm]
+  \\
+  We want a systematic way to find a small expression.
 \end{frame}
 
 % ------------------------------------------------------------
@@ -194,11 +186,10 @@
     \Large \highlight{\textbf{Karnaugh maps}}
   \end{center}
 \end{frame}
-
 \begin{frame}
   A \highlight{\textbf{Karnaugh map}} rewrites the truth table as a grid. Neighbouring cells differ in exactly one input, so their column labels follow a special order.\\[4mm]
   \begin{figure}
-    \centering
+  \hspace{-0.7cm}
     \begin{tikzpicture}[scale=0.9]
       \draw[thick] (0,0) grid (4,2);
       \foreach \x/\l in {0.5/00, 1.5/01, 2.5/11, 3.5/10}
@@ -216,22 +207,9 @@
 \end{frame}
 
 \begin{frame}
-  We cover the \ttab{1}s with as few groups as possible. A valid group obeys three rules.\\[3mm]
-  \begin{itemize}
-    \item \graytext{it is a rectangle of \ttab{1}s} \\[1.5mm]
-    \item \graytext{its size is a power of two} \\[1.5mm]
-    \item \graytext{it may overlap other groups and may wrap around the edges}
-  \end{itemize}
-  \vspace{2mm}
-  \begin{center}
-    \graytext{a larger group removes more variables, so we make each group as big as we can}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  We fill each cell with the output for that input. Here is the map for one function of \ttab{a}, \ttab{b}, and \ttab{c}.\\[3mm]
+  We fill each cell with the output for that input.
   \begin{figure}
-    \centering
+  \hspace{-0.7cm}
     \begin{tikzpicture}[scale=0.9]
       \draw[thick] (0,0) grid (4,2);
       \foreach \x/\l in {0.5/00, 1.5/01, 2.5/11, 3.5/10}
@@ -240,20 +218,30 @@
       \node[smallgraytext] at (-0.45,0.5) {\ttab{1}};
       \node[smallgraytext] at (2,2.9) {\ttab{bc}};
       \node[smallgraytext] at (-0.9,1) {\ttab{a}};
-      % top row a=0
-      \node at (0.5,1.5) {\ttab{1}}; \node at (1.5,1.5) {\ttab{1}};
-      \node at (2.5,1.5) {\ttab{0}}; \node at (3.5,1.5) {\ttab{0}};
-      % bottom row a=1
-      \node at (0.5,0.5) {\ttab{1}}; \node at (1.5,0.5) {\ttab{1}};
-      \node at (2.5,0.5) {\ttab{1}}; \node at (3.5,0.5) {\ttab{0}};
+      \foreach \x/\y/\v in {
+        0.5/1.5/1, 1.5/1.5/1, 2.5/1.5/0, 3.5/1.5/0,
+        0.5/0.5/1, 1.5/0.5/1, 2.5/0.5/1, 3.5/0.5/0}
+        \node at (\x,\y) {\ttab{\v}};
     \end{tikzpicture}
   \end{figure}
 \end{frame}
 
 \begin{frame}
-  We circle the largest groups of adjacent \ttab{1}s whose size is a power of two. Each group becomes one product term.\\[2mm]
+  We cover the \ttab{1}s (when using sum-of-products), or \ttab{0}s (when using product-of-sums) with as few groups as possible.
+  \\~\\
+  A valid group obeys three rules:\\[3mm]
+  \begin{itemize}
+    \item it is a rectangle of \ttab{1}s (or \ttab{0}s) \\[1.5mm]
+    \item its size is a power of two \\[1.5mm]
+    \item it may overlap other groups and may wrap around the edges
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  We circle the largest groups of adjacent \ttab{1}s (when using a sum-of-products) or \ttab{0}s (when using product-of-sums) whose size is a power of two. Each group becomes one term.\\[2mm]
   \begin{figure}
-    \centering
+  \hspace{-0.7cm}
     \begin{tikzpicture}[scale=0.9]
       \draw[thick] (0,0) grid (4,2);
       \foreach \x/\l in {0.5/00, 1.5/01, 2.5/11, 3.5/10}
@@ -262,33 +250,51 @@
       \node[smallgraytext] at (-0.45,0.5) {\ttab{1}};
       \node[smallgraytext] at (2,2.9) {\ttab{bc}};
       \node[smallgraytext] at (-0.9,1) {\ttab{a}};
-      \node at (0.5,1.5) {\ttab{1}}; \node at (1.5,1.5) {\ttab{1}};
-      \node at (2.5,1.5) {\ttab{0}}; \node at (3.5,1.5) {\ttab{0}};
-      \node at (0.5,0.5) {\ttab{1}}; \node at (1.5,0.5) {\ttab{1}};
-      \node at (2.5,0.5) {\ttab{1}}; \node at (3.5,0.5) {\ttab{0}};
+      \foreach \x/\y/\v in {
+        0.5/1.5/1, 1.5/1.5/1, 2.5/1.5/0, 3.5/1.5/0,
+        0.5/0.5/1, 1.5/0.5/1, 2.5/0.5/1, 3.5/0.5/0}
+        \node at (\x,\y) {\ttab{\v}};
       % group of four: columns 00,01 both rows -> b bar
       \draw[very thick, myblue, rounded corners=4pt] (0.12,0.12) rectangle (1.88,1.88);
-      \node[myblue, smallgraytext] at (1,-0.45) {$\overline{b}$};
       % group of two: bottom row columns 01,11 -> a c
       \draw[very thick, myorange, rounded corners=4pt] (1.12,0.12) rectangle (2.88,0.88);
-      \node[myorange, smallgraytext] at (2,-0.45) {$a \cdot c$};
     \end{tikzpicture}
   \end{figure}
   \begin{center}
-    $y = \overline{b} + a \cdot c$
+    $\ttab{y} = \overline{\ttab{b}} + \ttab{a}\ttab{c}$
   \end{center}
 \end{frame}
 
 \begin{frame}
-  \begin{center}
-    Grouping turns four minterms into two small terms, giving a circuit with far fewer gates.
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  Larger maps work the same way. With four inputs the grid is four by four, and a group of four here removes two variables.\\[1mm]
+  A group may also wrap around the edges of the map.\\[2mm]
   \begin{figure}
-    \centering
+  \hspace{-0.7cm}
+    \begin{tikzpicture}[scale=0.9]
+      \draw[thick] (0,0) grid (4,2);
+      \foreach \x/\l in {0.5/00, 1.5/01, 2.5/11, 3.5/10}
+        \node[smallgraytext] at (\x,2.35) {\ttab{\l}};
+      \node[smallgraytext] at (-0.45,1.5) {\ttab{0}};
+      \node[smallgraytext] at (-0.45,0.5) {\ttab{1}};
+      \node[smallgraytext] at (2,2.9) {\ttab{bc}};
+      \node[smallgraytext] at (-0.9,1) {\ttab{a}};
+      \foreach \x/\y/\v in {
+        0.5/1.5/1, 1.5/1.5/0, 2.5/1.5/0, 3.5/1.5/1,
+        0.5/0.5/1, 1.5/0.5/0, 2.5/0.5/0, 3.5/0.5/1}
+        \node at (\x,\y) {\ttab{\v}};
+      % left edge column
+      \draw[very thick, myblue, rounded corners=4pt] (0.02,0.12) rectangle (0.98,1.88);
+      % right edge column
+      \draw[very thick, myblue, rounded corners=4pt] (3.02,0.12) rectangle (3.98,1.88);
+    \end{tikzpicture}
+  \end{figure}
+  \begin{center}
+    \graytext{the leftmost and rightmost columns are neighbours, so together they count as a single group}
+  \end{center}
+\end{frame}
+\begin{frame}
+  Larger maps work the same way.
+  \begin{figure}
+  \hspace{-0.7cm}
     \begin{tikzpicture}[scale=0.72, transform shape]
       \draw[thick] (0,0) grid (4,4);
       \foreach \x/\l in {0.5/00, 1.5/01, 2.5/11, 3.5/10}
@@ -297,18 +303,23 @@
         \node[smallgraytext] at (-0.5,\y) {\ttab{\l}};
       \node[smallgraytext] at (2,4.9) {\ttab{cd}};
       \node[smallgraytext] at (-1.1,2) {\ttab{ab}};
-      % all zeros
-      \foreach \x in {0.5,1.5,2.5,3.5}
-        \foreach \y in {0.5,1.5,2.5,3.5}
-          \node at (\x,\y) {\ttab{0}};
+      \foreach \x/\y/\v in {
+        0.5/3.5/1, 1.5/3.5/0, 2.5/3.5/0, 3.5/3.5/1,
+        0.5/2.5/0, 1.5/2.5/1, 2.5/2.5/1, 3.5/2.5/0,
+        0.5/1.5/0, 1.5/1.5/1, 2.5/1.5/1, 3.5/1.5/0,
+        0.5/0.5/1, 1.5/0.5/0, 2.5/0.5/0, 3.5/0.5/1}
+        \node at (\x,\y) {\ttab{\v}};
       % central block of ones (b=1, d=1)
-      \foreach \x in {1.5,2.5}
-        \foreach \y in {1.5,2.5}
-          \node at (\x,\y) {\ttab{1}};
       \draw[very thick, myblue, rounded corners=5pt] (1.1,1.1) rectangle (2.9,2.9);
-      \node[myblue, smallgraytext] at (4.8,2) {$b \cdot d$};
+      % four corners (b=0, d=0), wraps both edges
+      \draw[very thick, myorange, rounded corners=4pt] (0.02,0.02) rectangle (0.98,0.98);
+      \draw[very thick, myorange, rounded corners=4pt] (3.02,0.02) rectangle (3.98,0.98);
+      \draw[very thick, myorange, rounded corners=4pt] (0.02,3.02) rectangle (0.98,3.98);
+      \draw[very thick, myorange, rounded corners=4pt] (3.02,3.02) rectangle (3.98,3.98);
     \end{tikzpicture}
   \end{figure}
+  \begin{center}
+    \graytext{the four corners are all neighbours here, wrapping both the rows and the columns}
+  \end{center}
 \end{frame}
-
 \end{document}

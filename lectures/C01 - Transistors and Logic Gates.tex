@@ -48,40 +48,33 @@
   \maketitle
 \end{frame}
 
-
 \begin{frame}
-  A wire carries a continuous voltage, but a digital circuit reads it as only two levels. A voltage near ground is \highlight{\textbf{low}} (\ttab{0}) and a voltage near the supply is \highlight{\textbf{high}} (\ttab{1}).\\[5mm]
-  \begin{minipage}{0.5\textwidth}
+  Recall that we break up the voltage range into two levels.
+  \begin{figure}
     \centering
     \begin{tikzpicture}[>=stealth]
-      % continuous voltage scale, cut into bands
-      \fill[myblue!25]   (0,0)   rectangle (1.3,1.5);
-      \fill[black!10]    (0,1.5) rectangle (1.3,2.4);
-      \fill[myyellow!55] (0,2.4) rectangle (1.3,3.9);
-      \draw (0,0) rectangle (1.3,3.9);
-      \draw[dashed] (0,1.5) -- (1.3,1.5);
-      \draw[dashed] (0,2.4) -- (1.3,2.4);
-      % voltage axis
-      \draw[->, thick] (-0.5,0) -- (-0.5,4.1);
-      \node[smallgraytext, rotate=90, anchor=south] at (-0.7,2) {voltage};
-      \node[smallgraytext, left] at (-0.05,0) {$0$};
-      \node[smallgraytext, left] at (-0.05,3.9) {$V_{\!DD}$};
-      % digital readings
-      \node[right] at (1.5,0.75) {reads \ttab{0}};
-      \node[right] at (1.5,3.15) {reads \ttab{1}};
-      \node[right, smallgraytext] at (1.5,1.95) {forbidden};
+      % a wire with a high and low voltage state
+      \draw[thick] (0,0) -- (1,0) -- (1,1.2) -- (2,1.2) -- (2,0) -- (3,0);
+      \node[smallgraytext, below=7mm of {(1.5,0)}] {voltage over time};
+
+      \node[smallgraytext] at (0.5,-0.5) {low};
+      \node[smallgraytext] at (1.5,1.7) {high};
+      \node[smallgraytext] at (2.5,-0.5) {low};
+
+      \draw[->, gray, thick] (3.6,0.6) -- (5,0.6);
+
+      \node at (6.3,0.6) {\Large $0 \; \; 1 \;\; 0$};
     \end{tikzpicture}
-  \end{minipage}%
-  \begin{minipage}{0.5\textwidth}
-    \centering
-    \graytext{a threshold splits the range in two} \\[4mm]
-    \graytext{voltages in the forbidden band are undefined, so a well-built circuit never rests there}
-  \end{minipage}
+  \end{figure}
+  \begin{center}
+  \graytext{a voltage above some upper threshold is read as a \texttt{1}, and a voltage below a lower threshold is read as a \texttt{0}}    
+  \end{center}
+  
 \end{frame}
 
 \begin{frame}
   
-  A wire takes its value from whatever it is tied to. \\[7mm]
+  A wire can carry one of thse two values, depending on what it is tied to. \\[7mm]
   \begin{minipage}[t]{0.33\textwidth}
     \centering
     \begin{tikzpicture}[line width=0.9pt, baseline=(current bounding box.north)]
@@ -93,7 +86,8 @@
       \fill (0,-0.7) circle (1.4pt);
       \node[right=1.5mm] at (0,-0.7) {\ttab{1}};
     \end{tikzpicture} \\[6mm]
-    \graytext{connected to power}
+    \graytext{connected to power} \\
+    \graytext{carries a \texttt{1}}
   \end{minipage}%
   \begin{minipage}[t]{0.33\textwidth}
     \centering
@@ -108,7 +102,8 @@
       \draw (-0.1,-0.85) -- (0.1,-0.85);
       \node[smallgraytext, below=0mm] at (0,-0.95) {ground};
     \end{tikzpicture} \\[6mm]
-    \graytext{connected to ground}
+    \graytext{connected to ground}\\
+    \graytext{carries a \texttt{0}}
   \end{minipage}%
   \begin{minipage}[t]{0.33\textwidth}
     \centering
@@ -118,25 +113,17 @@
       \draw (0,0.75) circle (0.07);
       \draw (0,0.68) -- (0,-0.7);
       \fill (0,-0.7) circle (1.4pt);
-      \node[right=1.5mm] at (0,-0.7) {\ttab{Z}};
+      \node[right=1.5mm] at (0,-0.7) {\ttab{z}};
     \end{tikzpicture} \\[6mm]
-    \graytext{connected to nothing}
+    \graytext{connected to nothing}\\
+    \graytext{carries an undefined value, \texttt{z}}
   \end{minipage}
 \\[7mm]
-  A wire that is left untied  does not carry a 0.
-\end{frame}
-
-% ------------------------------------------------------------
-% the transistor
-% ------------------------------------------------------------
-\begin{frame}{The Transistor}
-  \begin{center}
-    \Large \highlight{\textbf{the transistor}}
-  \end{center}
+However, its value can also be undefined if it is not tied to anything (this is different from carrying a \texttt{0}).
 \end{frame}
 
 \begin{frame}
-  Think of a simple circuit: a power source drives a light bulb through a switch. Current flows only when the switch closes the loop.\\[3mm]
+Switches allow us to change what a wire is tied to.\\[3mm]
   \begin{minipage}{0.5\textwidth}
     \centering
     \highlight{\textbf{open}} \\[4mm]
@@ -200,8 +187,15 @@
     \graytext{the switch completes the loop, \\ so the bulb turns on}
   \end{minipage}
   \\[4mm]
+  To build a computer, we need to creating a switch that can be moved by sending an electrical signal.
+\end{frame}
+
+% ------------------------------------------------------------
+% the transistor
+% ------------------------------------------------------------
+\begin{frame}{The Transistor}
   \begin{center}
-    \graytext{a hand-flipped switch works for a lamp, but a computer needs a switch that another wire can open and close}
+    \Large \highlight{\textbf{the transistor}}
   \end{center}
 \end{frame}
 
@@ -244,181 +238,291 @@
       \draw[thick] (-0.6,0) -- ++(-0.15,0) node[left, smallgraytext] {\ttab{g}};
     \end{tikzpicture} \\[3mm]
     \graytext{conducts when the gate \\ is \ttab{0}} \\[1mm]
-    \graytext{(marked by the small circle)}
   \end{minipage}
 \end{frame}
 
 \begin{frame}
-  Now the switch is a transistor, sitting where the hand switch was. The gate input \ttab{g} opens and closes it, so a voltage on one wire controls the current in another.\\[3mm]
+Transistors use a silicon base, but pure silicon has no free charges.\\[3mm]
   \begin{minipage}{0.5\textwidth}
     \centering
-    \highlight{\textbf{g = 0}} \\[6mm]
+    \highlight{\textbf{n-type}} \\[3mm]
     \begin{tikzpicture}[line width=0.9pt]
-      \useasboundingbox (-0.4,-0.6) rectangle (3.9,3.5);
-      % loop wires
-      \draw (0,0) -- (0,2.4);              % left
-      \draw (0,2.4) -- (0.9,2.4);          % top-left to drain
-      \draw (2.1,2.4) -- (3,2.4);          % source to top-right
-      \draw (0,0) -- (1.3,0);              % bottom-left to battery
-      \draw (1.6,0) -- (3,0);              % battery to bottom-right
-      % nMOS in the top wire, gate pointing up
-      \pic[rotate=-90] at (1.5,2.4) {nmos};
-      \draw (1.5,3.0) -- (1.5,3.3) node[above] {\ttab{g}};
-      % battery (power source)
-      \draw (1.3,-0.22) -- (1.3,0.22);
-      \draw[line width=1.7pt] (1.6,-0.12) -- (1.6,0.12);
-      \node[smallgraytext, below=1mm] at (1.45,-0.22) {power source};
-      % right wire to bulb
-      \draw (3,2.4) -- (3,1.48);
-      \draw (3,0.72) -- (3,0);
-      % bulb (off)
-      \draw (3,1.1) circle (0.38);
-      \draw (2.73,0.83) -- (3.27,1.37);
-      \draw (2.73,1.37) -- (3.27,0.83);
-    \end{tikzpicture} \\[4mm]
-    \graytext{the gate is low, the nMOS \\ does not conduct, bulb off}
+      \useasboundingbox (-0.6,-0.9) rectangle (4.6,4.2);
+
+      % silicon lattice: grid of atoms with bonds
+      \foreach \x in {0,1,2,3} {
+        \foreach \y in {0,1,2,3} {
+          \draw[gray!50] (\x,\y) -- (\x+1,\y);
+          \draw[gray!50] (\x,\y) -- (\x,\y+1);
+        }
+      }
+      \foreach \x in {0,...,4} {
+        \foreach \y in {0,...,4} {
+          \fill[gray!30] (\x,\y) circle (0.16);
+          \draw[gray!60] (\x,\y) circle (0.16);
+        }
+      }
+
+      % dopant atom (phosphorus) at center, replacing a silicon atom
+      \fill[orange!45] (2,2) circle (0.2);
+      \draw[black] (2,2) circle (0.2);
+      \node[font=\tiny] at (2,2) {P};
+
+      % spare electron near the dopant, loosely bound (dashed orbit)
+      \draw[gray!60, dashed] (2,2) circle (0.55);
+      \fill[myyellow] (2,2.55) circle (0.09);
+      \draw (2,2.55) circle (0.09);
+
+    \end{tikzpicture} \\[-3mm]
+    \graytext{phosphorus donates a spare electron}\\
+    \graytext{extra electrons are free to carry ($-$) charge}
   \end{minipage}%
   \begin{minipage}{0.5\textwidth}
     \centering
-    \highlight{\textbf{g = 1}} \\[6mm]
+    \highlight{\textbf{p-type}} \\[3mm]
     \begin{tikzpicture}[line width=0.9pt]
-      \useasboundingbox (-0.4,-0.6) rectangle (3.9,3.5);
-      \draw (0,0) -- (0,2.4);
-      \draw (0,2.4) -- (0.9,2.4);
-      \draw (2.1,2.4) -- (3,2.4);
-      \draw (0,0) -- (1.3,0);
-      \draw (1.6,0) -- (3,0);
-      \pic[rotate=-90] at (1.5,2.4) {nmos};
-      \draw (1.5,3.0) -- (1.5,3.3) node[above] {\ttab{g}};
-      \draw (1.3,-0.22) -- (1.3,0.22);
-      \draw[line width=1.7pt] (1.6,-0.12) -- (1.6,0.12);
-      \node[smallgraytext, below=1mm] at (1.45,-0.22) {power source};
-      \draw (3,2.4) -- (3,1.48);
-      \draw (3,0.72) -- (3,0);
-      % bulb (on)
-      \fill[myyellow!55] (3,1.1) circle (0.38);
-      \draw (3,1.1) circle (0.38);
-      \draw (2.73,0.83) -- (3.27,1.37);
-      \draw (2.73,1.37) -- (3.27,0.83);
-      \foreach \a in {0,45,135,180,225,315} {
-        \draw[myyellow!80!black] ($(3,1.1)+(\a:0.5)$) -- ($(3,1.1)+(\a:0.72)$);
+      \useasboundingbox (-0.6,-0.9) rectangle (4.6,4.2);
+
+      % silicon lattice: grid of atoms with bonds
+      \foreach \x in {0,1,2,3} {
+        \foreach \y in {0,1,2,3} {
+          \draw[gray!50] (\x,\y) -- (\x+1,\y);
+          \draw[gray!50] (\x,\y) -- (\x,\y+1);
+        }
       }
-    \end{tikzpicture} \\[4mm]
-    \graytext{the gate is high, the nMOS \\ conducts, bulb on}
+      \foreach \x in {0,...,4} {
+        \foreach \y in {0,...,4} {
+          \fill[gray!30] (\x,\y) circle (0.16);
+          \draw[gray!60] (\x,\y) circle (0.16);
+        }
+      }
+
+      % dopant atom (boron) at center, replacing a silicon atom
+      \fill[violet!35] (2,2) circle (0.2);
+      \draw[black] (2,2) circle (0.2);
+      \node[font=\tiny] at (2,2) {B};
+
+      % missing bond / hole next to the dopant
+      \draw[red!55] (2,2.55) circle (0.09);
+      \node[red!55, font=\tiny] at (2,2.55) {+};
+      \draw[gray!40, dashed] (2,2.16) -- (2,2.46);
+
+      \node[smallgraytext] at (2,-0.4) {};
+    \end{tikzpicture} \\[-3mm]
+    \graytext{boron leaves a missing bond (a hole)}\\
+    \graytext{extra holes are free to carry ($+$) charge}
   \end{minipage}
-\end{frame}
-
-% ------------------------------------------------------------
-% driving an output
-% ------------------------------------------------------------
-\begin{frame}
-  To build a gate, every input must connect the output to either the high supply or the ground.\\[3mm]
-  \begin{itemize}
-    \item a \highlight{\textbf{pull-up}} network connects the output to high \\[1mm]
-    \item a \highlight{\textbf{pull-down}} network connects the output to low
-  \end{itemize}
-  \vspace{3mm}
-  \begin{center}
-    \graytext{leaving the output unconnected is not the same as driving it low}
-  \end{center}
-\end{frame}
-
-% ------------------------------------------------------------
-% NOT gate
-% ------------------------------------------------------------
-\begin{frame}{Building a NOT Gate}
-  \begin{center}
-    \Large \highlight{\textbf{building a NOT gate}}
-  \end{center}
+  \\\vspace{2mm}
+Adding a small amount of another element (called \highlight{\textbf{doping}}), creates extra electrons or extra holes (lack of electrons).
 \end{frame}
 
 \begin{frame}
-  One pMOS pulls the output up and one nMOS pulls it down. When the input is \ttab{0} the top transistor conducts, so the output is \ttab{1}, and the reverse.\\[1mm]
-  \begin{minipage}{0.55\textwidth}
+  The source and the drain are made of one type and the base is made of another. The gate is separated from the base by an insulating layer.\\[3mm]
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{gate off} ($V_G = 0$)} \\[3mm]
+    \begin{tikzpicture}[line width=0.9pt]
+      \useasboundingbox (-0.6,-1.0) rectangle (4.6,3.1);
+
+      % p-type substrate/body
+      \filldraw[violet!12, draw=black] (0,0) rectangle (4,1.6);
+
+      % n+ source and drain regions (copper colored)
+      \filldraw[orange!25, draw=black] (0.15,0.95) rectangle (1.15,1.6);
+      \filldraw[orange!25, draw=black] (2.85,0.95) rectangle (3.85,1.6);
+
+      % gate oxide (insulator)
+      \filldraw[gray!12, draw=black] (1.15,1.6) rectangle (2.85,1.75);
+      % gate electrode
+      \filldraw[gray!55, draw=black] (1.35,1.75) rectangle (2.65,2.05);
+
+      % holes scattered in p-type body (sparse)
+      \foreach \p in {(0.5,0.25),(1.0,0.5),(1.7,0.25),(2.0,1.15),
+                      (2.3,0.5),(3.0,0.25),(3.5,0.5),(1.4,1.15),(2.6,1.15)} {
+        \draw[red!55] \p circle (0.07);
+        \node[red!55, font=\tiny] at \p {+};
+      }
+
+      % electrons evenly packed in source
+      \foreach \x in {0.25,0.45,0.65,0.85,1.05} {
+        \foreach \y in {1.05,1.2,1.35,1.5} {
+          \fill[myyellow] (\x,\y) circle (0.055);
+          \draw (\x,\y) circle (0.055);
+        }
+      }
+      % electrons evenly packed in drain
+      \foreach \x in {2.95,3.15,3.35,3.55,3.75} {
+        \foreach \y in {1.05,1.2,1.35,1.5} {
+          \fill[myyellow] (\x,\y) circle (0.055);
+          \draw (\x,\y) circle (0.055);
+        }
+      }
+
+      % contacts
+      \draw (0.65,1.6) -- (0.65,2.4);
+      \node[smallgraytext, align=center] at (0.65,2.75) {source\\[-1mm]{\tiny (n-type)}};
+      \draw (3.35,1.6) -- (3.35,2.4);
+      \node[smallgraytext, align=center] at (3.35,2.75) {drain\\[-1mm]{\tiny (n-type)}};
+      \draw (2.0,2.05) -- (2.0,2.4);
+      \node[smallgraytext] at (2.0,2.6) {gate};
+      \draw (2.0,0) -- (2.0,-0.35);
+      \node[smallgraytext, align=center] at (2.0,-0.7) {body\\[-1mm]{\tiny (p-type)}};
+    \end{tikzpicture} \\[3mm]
+    \graytext{few free electrons in the base}\\[-1mm]
+    \graytext{disturbance cannot move across base}
+  \end{minipage}%
+  \begin{minipage}{0.5\textwidth}
+    \centering
+    \highlight{\textbf{gate on} ($V_G > V_{th}$)} \\[3mm]
+    \begin{tikzpicture}[line width=0.9pt]
+      \useasboundingbox (-0.6,-1.0) rectangle (4.6,3.1);
+
+      % p-type substrate/body
+      \filldraw[violet!12, draw=black] (0,0) rectangle (4,1.6);
+
+      % n+ source and drain regions (copper colored)
+      \filldraw[orange!25, draw=black] (0.15,0.95) rectangle (1.15,1.6);
+      \filldraw[orange!25, draw=black] (2.85,0.95) rectangle (3.85,1.6);
+
+      % gate oxide (insulator)
+      \filldraw[gray!12, draw=black] (1.15,1.6) rectangle (2.85,1.75);
+      % gate electrode, positively charged
+      \filldraw[gray!55, draw=black] (1.35,1.75) rectangle (2.65,2.05);
+      \foreach \gx in {1.55,1.85,2.15,2.45} {
+        \node[red!70, font=\tiny] at (\gx,1.9) {+};
+      }
+
+      % holes scattered in p-type body, away from the surface
+      \foreach \p in {(0.5,0.25),(1.0,0.5),(1.7,0.3),(2.3,0.3),(3.0,0.25),(3.5,0.5)} {
+        \draw[red!55] \p circle (0.07);
+        \node[red!55, font=\tiny] at \p {+};
+      }
+
+      % electrons evenly packed in source
+      \foreach \x in {0.25,0.45,0.65,0.85,1.05} {
+        \foreach \y in {1.05,1.2,1.35,1.5} {
+          \fill[myyellow] (\x,\y) circle (0.055);
+          \draw (\x,\y) circle (0.055);
+        }
+      }
+      % electrons evenly packed in drain
+      \foreach \x in {2.95,3.15,3.35,3.55,3.75} {
+        \foreach \y in {1.05,1.2,1.35,1.5} {
+          \fill[myyellow] (\x,\y) circle (0.055);
+          \draw (\x,\y) circle (0.055);
+        }
+      }
+      % thin row of electrons connecting source to drain
+      \foreach \x in {1.25,1.45,1.65,1.85,2.05,2.25,2.45,2.65,2.75} {
+        \fill[myyellow] (\x,1.53) circle (0.055);
+        \draw (\x,1.53) circle (0.055);
+      }
+      % small arrows showing the channel electrons are drawn up from source/drain
+
+      % flow arrow (reversed direction, source to drain)
+      \draw[->, gray, thick] (1.3,1.32) -- (2.7,1.32);
+
+      % contacts
+      \draw (0.65,1.6) -- (0.65,2.4);
+      \node[smallgraytext, align=center] at (0.65,2.75) {source\\[-1mm]{\tiny (n-type)}};
+      \draw (3.35,1.6) -- (3.35,2.4);
+      \node[smallgraytext, align=center] at (3.35,2.75) {drain\\[-1mm]{\tiny (n-type)}};
+      \draw (2.0,2.05) -- (2.0,2.4);
+      \node[smallgraytext] at (2.0,2.6) {gate};
+      \draw (2.0,0) -- (2.0,-0.35);
+      \node[smallgraytext, align=center] at (2.0,-0.7) {body\\[-1mm]{\tiny (p-type)}};
+    \end{tikzpicture} \\[3mm]
+    \graytext{electrons drawn from source and drain}\\[-1mm]
+    \graytext{disturbance can move across base}
+  \end{minipage}
+  \\[4mm]
+  The gate voltage controls whether electrons connect the source and drain.
+\end{frame}
+
+\begin{frame}
+\begin{center}
+    \highlight{\large \texttt{NOT}\;\textbf{gate}}
+\end{center}
+  \begin{minipage}{0.45\textwidth}
     \centering
     \begin{tikzpicture}
-      % supply and ground rails
       \node[smallgraytext] at (0,2.15) {high};
       \draw[thick] (-0.4,1.9) -- (0.4,1.9);
       \draw[thick] (0,1.9) -- (0,1.6);
-      % pMOS (pull-up)
       \pic at (0,1.0) {pmos};
-      % nMOS (pull-down)
       \pic at (0,-1.0) {nmos};
-      % connect pMOS drain to nMOS source through the output node
       \draw[thick] (0,0.4) -- (0,-0.4);
       \fill (0,0) circle (1.4pt);
       \draw[thick] (0,0) -- (1.1,0) node[right, smallgraytext] {\ttab{y}};
-      % ground
       \draw[thick] (0,-1.6) -- (0,-1.9);
       \draw[thick] (-0.4,-1.9) -- (0.4,-1.9);
       \node[smallgraytext] at (0,-2.15) {low};
-      % shared input to both gates
-      \draw[thick] (-0.6,1.0) -| (-1.1,0) |- (-0.6,-1.0);
-      \draw[thick] (-1.1,0) -- ++(-0.5,0) node[left, smallgraytext] {\ttab{a}};
-      \fill (-1.1,0) circle (1.4pt);
+      % pushed the gate lead out further so the label clears the pic
+      \draw[thick] (-0.6,1.0) -| (-1.3,0) |- (-0.6,-1.0);
+      \draw[thick] (-1.3,0) -- ++(-0.5,0) node[left, smallgraytext] {\ttab{a}};
+      \fill (-1.3,0) circle (1.4pt);
     \end{tikzpicture}
   \end{minipage}%
-  \begin{minipage}{0.45\textwidth}
+  \begin{minipage}{0.5\textwidth}
     \centering
+    \begin{tikzpicture}
+      \node[not gate US, draw, thick, scale=1.3] (n) at (0,0) {};
+      \draw[thick] (n.input) -- ++(-0.5,0) node[left, smallgraytext] {\ttab{a}};
+      \draw[thick] (n.output) -- ++(0.5,0) node[right, smallgraytext] {\ttab{y}};
+    \end{tikzpicture} \\[6mm]
     \renewcommand{\arraystretch}{1.3}
     \begin{tabular}{c|c}
       \ttab{a} & \ttab{y} \\ \hline
       \ttab{0} & \ttab{1} \\
       \ttab{1} & \ttab{0} \\
-    \end{tabular} \\[6mm]
-    \begin{tikzpicture}
-      \node[not gate US, draw, thick, scale=1.3] (n) at (0,0) {};
-      \draw[thick] (n.input) -- ++(-0.5,0) node[left, smallgraytext] {\ttab{a}};
-      \draw[thick] (n.output) -- ++(0.5,0) node[right, smallgraytext] {\ttab{y}};
-    \end{tikzpicture} \\[1mm]
-    \graytext{its gate symbol}
+    \end{tabular}
   \end{minipage}
-\end{frame}
-
-% ------------------------------------------------------------
-% AND gate
-% ------------------------------------------------------------
-\begin{frame}{Building an AND Gate}
   \begin{center}
-    \Large \highlight{\textbf{building an AND gate}}
+          \graytext{the transistor circuit, circuit symbol, and truth table for the \texttt{NOT} gate}
   \end{center}
 \end{frame}
 
 \begin{frame}
-  Two nMOS in series pull the output up only when both inputs are \ttab{1}. Two pMOS in parallel pull it down when either input is \ttab{0}.\\[1mm]
-  \begin{minipage}{0.55\textwidth}
+\begin{center}
+    \highlight{\large \texttt{AND}\;\textbf{gate}}
+\end{center}
+  \begin{minipage}{0.45\textwidth}
     \centering
-    \begin{tikzpicture}
-      % high rail
+    \begin{tikzpicture}[scale=0.78, every node/.style={transform shape}]
       \node[smallgraytext] at (0,2.75) {high};
       \draw[thick] (-0.4,2.5) -- (0.4,2.5);
       \draw[thick] (0,2.5) -- (0,2.2);
-      % series nMOS (pull-up): A then B
       \pic at (0,1.6) {nmos};
-      \draw[thick] (-0.6,1.6) -- ++(-0.35,0) node[left, smallgraytext] {\ttab{a}};
+      % longer lead so label clears the pic and the vertical bus below
+      \draw[thick] (-0.6,1.6) -- ++(-0.55,0) node[left, smallgraytext] {\ttab{a}};
       \draw[thick] (0,1.0) -- (0,0.6);
       \pic at (0,0.0) {nmos};
-      \draw[thick] (-0.6,0.0) -- ++(-0.35,0) node[left, smallgraytext] {\ttab{b}};
-      % output node
+      \draw[thick] (-0.6,0.0) -- ++(-0.55,0) node[left, smallgraytext] {\ttab{b}};
       \draw[thick] (0,-0.6) -- (0,-1.0);
       \fill (0,-1.0) circle (1.4pt);
       \draw[thick] (0,-1.0) -- (2.2,-1.0) node[right, smallgraytext] {\ttab{y}};
-      % parallel pMOS (pull-down) to ground
-      \pic at (0.9,-2.0) {pmos};
-      \pic at (2.0,-2.0) {pmos};
-      \draw[thick] (0.9,-1.4) -- (0.9,-1.0);
-      \draw[thick] (2.0,-1.4) -- (2.0,-1.0);
-      \draw[thick] (0.9,-2.6) -- (0.9,-2.9);
-      \draw[thick] (2.0,-2.6) -- (2.0,-2.9);
-      \draw[thick] (0.5,-2.9) -- (2.4,-2.9);
-      \node[smallgraytext] at (1.45,-3.15) {low};
-      \draw[thick] (0.3,-2.0) -- ++(-0.3,0) node[left, smallgraytext] {\ttab{a}};
-      \draw[thick] (1.4,-2.0) -- ++(-0.3,0) node[left, smallgraytext] {\ttab{b}};
+      % nudged the two pMOS further apart so their gate leads don't
+      % run into each other's transistor symbol
+      \pic at (0.8,-2.0) {pmos};
+      \pic at (2.2,-2.0) {pmos};
+      \draw[thick] (0.8,-1.4) -- (0.8,-1.0);
+      \draw[thick] (2.2,-1.4) -- (2.2,-1.0);
+      \draw[thick] (0.8,-2.6) -- (0.8,-2.9);
+      \draw[thick] (2.2,-2.6) -- (2.2,-2.9);
+      \draw[thick] (0.4,-2.9) -- (2.6,-2.9);
+      \node[smallgraytext] at (1.5,-3.15) {low};
+      \draw[thick] (0.2,-2.0) -- ++(-0.35,0) node[left, smallgraytext] {\ttab{a}};
+      \draw[thick] (1.6,-2.0) -- ++(-0.35,0) node[left, smallgraytext] {\ttab{b}};
     \end{tikzpicture}
   \end{minipage}%
-  \begin{minipage}{0.45\textwidth}
+  \begin{minipage}{0.5\textwidth}
     \centering
+    \begin{tikzpicture}
+      \node[and gate US, draw, thick, scale=1.2] (g) at (0,0) {};
+      \draw[thick] (g.input 1) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{a}};
+      \draw[thick] (g.input 2) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{b}};
+      \draw[thick] (g.output) -- ++(0.4,0) node[right, smallgraytext] {\ttab{y}};
+    \end{tikzpicture} \\[6mm]
     \renewcommand{\arraystretch}{1.2}
     \begin{tabular}{cc|c}
       \ttab{a} & \ttab{b} & \ttab{y} \\ \hline
@@ -426,88 +530,56 @@
       \ttab{0} & \ttab{1} & \ttab{0} \\
       \ttab{1} & \ttab{0} & \ttab{0} \\
       \ttab{1} & \ttab{1} & \ttab{1} \\
-    \end{tabular} \\[6mm]
-    \begin{tikzpicture}
-      \node[and gate US, draw, thick, scale=1.2] (g) at (0,0) {};
-      \draw[thick] (g.input 1) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{a}};
-      \draw[thick] (g.input 2) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{b}};
-      \draw[thick] (g.output) -- ++(0.4,0) node[right, smallgraytext] {\ttab{y}};
-    \end{tikzpicture} \\[1mm]
-    \graytext{its gate symbol}
+    \end{tabular}
   \end{minipage}
-\end{frame}
-
-\begin{frame}
-  An OR gate uses the same parts the other way around. The nMOS go in parallel and the pMOS go in series.\\[3mm]
   \begin{center}
-    \graytext{parallel pull-up makes the output \ttab{1} when either input is \ttab{1}}
-  \end{center}
-  \vspace{2mm}
-  \begin{center}
-    \graytext{every gate is just a pull-up and a pull-down network of transistors}
-  \end{center}
-\end{frame}
-
-% ------------------------------------------------------------
-% gates as an abstraction
-% ------------------------------------------------------------
-\begin{frame}{Logic Gates}
-  \begin{center}
-    \Large \highlight{\textbf{logic gates}}
+    \graytext{the transistor circuit, circuit symbol, and truth table for the \texttt{AND} gate}
   \end{center}
 \end{frame}
 
 \begin{frame}
-  From now on we use each gate as a single symbol and describe it by its \highlight{\textbf{truth table}}, which lists the output for every input.\\[3mm]
-  \begin{center}
-    \graytext{we no longer draw the transistors inside}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \begin{minipage}{0.33\textwidth}
+\begin{center}
+    \highlight{\large \texttt{OR}\;\textbf{gate}}
+\end{center}
+  \begin{minipage}{0.45\textwidth}
     \centering
-    \highlight{\textbf{NOT}} \\[2mm]
-    \begin{tikzpicture}
-      \node[not gate US, draw, thick, scale=1.2] (n) at (0,0) {};
-      \draw[thick] (n.input) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{a}};
-      \draw[thick] (n.output) -- ++(0.4,0) node[right, smallgraytext] {\ttab{y}};
-    \end{tikzpicture} \\[3mm]
-    \renewcommand{\arraystretch}{1.1}
-    \begin{tabular}{c|c}
-      \ttab{a} & \ttab{y} \\ \hline
-      \ttab{0} & \ttab{1} \\
-      \ttab{1} & \ttab{0} \\
-    \end{tabular}
+    \begin{tikzpicture}[scale=0.72, every node/.style={transform shape}]
+      \node[smallgraytext] at (1.5,2.75) {high};
+      \draw[thick] (1.1,2.5) -- (1.9,2.5);
+      \draw[thick] (1.5,2.5) -- (1.5,2.2);
+      \draw[thick] (0.4,2.2) -- (2.6,2.2);
+      % pushed the parallel nMOS further apart so the "b" lead
+      % no longer cuts through the "a" transistor's symbol
+      \pic at (0.7,1.6) {nmos};
+      \pic at (2.3,1.6) {nmos};
+      \draw[thick] (0.0,1.6) -- ++(-0.3,0) node[left, smallgraytext] {\ttab{a}};
+      \draw[thick] (1.6,1.6) -- ++(-0.3,0) node[left, smallgraytext] {\ttab{b}};
+      \draw[thick] (0.7,1.0) -- (0.7,0.6);
+      \draw[thick] (2.3,1.0) -- (2.3,0.6);
+      \draw[thick] (0.7,0.6) -- (2.3,0.6);
+      \draw[thick] (0.7,0.6) -- (0.7,0.0);
+      \fill (0.7,0.0) circle (1.4pt);
+      \draw[thick] (0.7,0.0) -- (3.3,0.0) node[right, smallgraytext] {\ttab{y}};
+      \draw[thick] (0.7,0.0) -- (0.7,-0.6);
+      \pic at (0.7,-1.2) {pmos};
+      \draw[thick] (0.1,-1.2) -- ++(-0.35,0) node[left, smallgraytext] {\ttab{a}};
+      \draw[thick] (0.7,-1.8) -- (0.7,-2.2);
+      \pic at (0.7,-2.8) {pmos};
+      \draw[thick] (0.1,-2.8) -- ++(-0.35,0) node[left, smallgraytext] {\ttab{b}};
+      \draw[thick] (0.7,-3.4) -- (0.7,-3.7);
+      \draw[thick] (0.3,-3.7) -- (1.1,-3.7);
+      \node[smallgraytext] at (0.7,-3.95) {low};
+    \end{tikzpicture}
   \end{minipage}%
-  \begin{minipage}{0.33\textwidth}
+  \begin{minipage}{0.5\textwidth}
     \centering
-    \highlight{\textbf{AND}} \\[2mm]
-    \begin{tikzpicture}
-      \node[and gate US, draw, thick, scale=1.2] (g) at (0,0) {};
-      \draw[thick] (g.input 1) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{a}};
-      \draw[thick] (g.input 2) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{b}};
-      \draw[thick] (g.output) -- ++(0.4,0) node[right, smallgraytext] {\ttab{y}};
-    \end{tikzpicture} \\[3mm]
-    \renewcommand{\arraystretch}{1.1}
-    \begin{tabular}{cc|c}
-      \ttab{a} & \ttab{b} & \ttab{y} \\ \hline
-      \ttab{0} & \ttab{0} & \ttab{0} \\
-      \ttab{0} & \ttab{1} & \ttab{0} \\
-      \ttab{1} & \ttab{0} & \ttab{0} \\
-      \ttab{1} & \ttab{1} & \ttab{1} \\
-    \end{tabular}
-  \end{minipage}%
-  \begin{minipage}{0.33\textwidth}
-    \centering
-    \highlight{\textbf{OR}} \\[2mm]
     \begin{tikzpicture}
       \node[or gate US, draw, thick, scale=1.2] (g) at (0,0) {};
       \draw[thick] (g.input 1) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{a}};
       \draw[thick] (g.input 2) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{b}};
       \draw[thick] (g.output) -- ++(0.4,0) node[right, smallgraytext] {\ttab{y}};
-    \end{tikzpicture} \\[3mm]
-    \renewcommand{\arraystretch}{1.1}
+    \end{tikzpicture} \\[6mm]
+    \renewcommand{\arraystretch}{1.2}
     \begin{tabular}{cc|c}
       \ttab{a} & \ttab{b} & \ttab{y} \\ \hline
       \ttab{0} & \ttab{0} & \ttab{0} \\
@@ -516,48 +588,68 @@
       \ttab{1} & \ttab{1} & \ttab{1} \\
     \end{tabular}
   \end{minipage}
+  \begin{center}
+    \graytext{the transistor circuit, circuit symbol, and truth table for the \texttt{OR} gate}
+  \end{center}
 \end{frame}
 
+
 \begin{frame}
-  Adding a NOT to the output of AND or OR gives two more gates, drawn with a small circle on the output.\\[4mm]
+  Adding a \texttt{NOT} gate to the output of an \texttt{AND} gate or \texttt{OR} gate gives two more gates (a \texttt{NAND} and a \texttt{NOR}, respectively), drawn with a circle on the output.\\[4mm]
   \begin{minipage}{0.5\textwidth}
     \centering
-    \highlight{\textbf{NAND}} \\[3mm]
+    \highlight{\texttt{NAND}\;\textbf{gate}} \\[3mm]
     \begin{tikzpicture}
       \node[nand gate US, draw, thick, scale=1.4] (g) at (0,0) {};
       \draw[thick] (g.input 1) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{a}};
       \draw[thick] (g.input 2) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{b}};
       \draw[thick] (g.output) -- ++(0.4,0) node[right, smallgraytext] {\ttab{y}};
     \end{tikzpicture} \\[3mm]
-    \graytext{\ttab{1} unless both inputs are \ttab{1}}
+    \graytext{\ttab{1} unless both inputs are \ttab{1}} \\[4mm]
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{cc|c}
+      \ttab{a} & \ttab{b} & \ttab{y} \\ \hline
+      \ttab{0} & \ttab{0} & \ttab{1} \\
+      \ttab{0} & \ttab{1} & \ttab{1} \\
+      \ttab{1} & \ttab{0} & \ttab{1} \\
+      \ttab{1} & \ttab{1} & \ttab{0} \\
+    \end{tabular}
   \end{minipage}%
   \begin{minipage}{0.5\textwidth}
     \centering
-    \highlight{\textbf{NOR}} \\[3mm]
+    \highlight{\texttt{NOR}\;\textbf{gate}} \\[3mm]
     \begin{tikzpicture}
       \node[nor gate US, draw, thick, scale=1.4] (g) at (0,0) {};
       \draw[thick] (g.input 1) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{a}};
       \draw[thick] (g.input 2) -- ++(-0.4,0) node[left, smallgraytext] {\ttab{b}};
       \draw[thick] (g.output) -- ++(0.4,0) node[right, smallgraytext] {\ttab{y}};
     \end{tikzpicture} \\[3mm]
-    \graytext{\ttab{1} only when both inputs are \ttab{0}}
+    \graytext{\ttab{1} only when both inputs are \ttab{0}} \\[4mm]
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{cc|c}
+      \ttab{a} & \ttab{b} & \ttab{y} \\ \hline
+      \ttab{0} & \ttab{0} & \ttab{1} \\
+      \ttab{0} & \ttab{1} & \ttab{0} \\
+      \ttab{1} & \ttab{0} & \ttab{0} \\
+      \ttab{1} & \ttab{1} & \ttab{0} \\
+    \end{tabular}
   \end{minipage}
 \end{frame}
 
-\begin{frame}{XOR}
+\begin{frame}
+\begin{center}
+    \highlight{\large \texttt{XOR}\;\textbf{gate}}
+\end{center}
+  We can build an exclusive \texttt{OR} gate (\texttt{XOR} gate) by combining an \texttt{OR} gate and a \texttt{NAND} gate.\\[4mm]
+  \begin{center}
   \begin{minipage}{0.5\textwidth}
     \centering
-    \highlight{\textbf{XOR}} \\[1mm]
-    \graytext{output is \ttab{1} when the \\ inputs differ} \\[6mm]
     \begin{tikzpicture}
       \node[xor gate US, draw, thick, scale=1.6] (g) at (0,0) {};
       \draw[thick] (g.input 1) -- ++(-0.6,0) node[left, smallgraytext] {\ttab{a}};
       \draw[thick] (g.input 2) -- ++(-0.6,0) node[left, smallgraytext] {\ttab{b}};
       \draw[thick] (g.output) -- ++(0.6,0) node[right, smallgraytext] {\ttab{y}};
-    \end{tikzpicture}
-  \end{minipage}%
-  \begin{minipage}{0.5\textwidth}
-    \centering
+    \end{tikzpicture} \\[6mm]
     \renewcommand{\arraystretch}{1.2}
     \begin{tabular}{cc|c}
       \ttab{a} & \ttab{b} & \ttab{y} \\ \hline
@@ -567,6 +659,10 @@
       \ttab{1} & \ttab{1} & \ttab{0} \\
     \end{tabular}
   \end{minipage}
+  \end{center}
+  \begin{center}
+    \graytext{output is \ttab{1} when the inputs differ}
+  \end{center}
 \end{frame}
 
 \begin{frame}
